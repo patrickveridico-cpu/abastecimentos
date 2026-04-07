@@ -3,74 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SISTEMA DE FROTA // RESGATE 116</title>
+    <title>FUEL_INTEL // RESGATE 116</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --bg: #020617; }
-        body { background: var(--bg); color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
+        :root { --neon: #00f2ff; --neon-red: #ff0055; --bg: #020617; }
+        body { background: var(--bg); color: #e2e8f0; font-family: 'JetBrains Mono', monospace; overflow-x: hidden; }
         .font-header { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(0, 242, 255, 0.1); }
-        .tab-active { border-bottom: 3px solid var(--neon); color: var(--neon); }
-        input, select { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; }
-        input:focus { border-color: var(--neon) !important; box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); outline: none; }
-        .btn-primary { background: linear-gradient(to r, #0891b2, #0e7490); transition: 0.3s; }
-        .btn-primary:hover { opacity: 0.8; transform: translateY(-2px); }
+        
+        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(0, 242, 255, 0.1); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8); }
+        .tab-active { border-bottom: 3px solid var(--neon); color: var(--neon); text-shadow: 0 0 10px var(--neon); }
+        
+        input, select { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; transition: 0.3s; }
+        input:focus { border-color: var(--neon) !important; box-shadow: 0 0 15px rgba(0, 242, 255, 0.3); outline: none; }
+        
+        .btn-neon { background: transparent; border: 2px solid var(--neon); color: var(--neon); transition: 0.3s; text-transform: uppercase; font-weight: bold; }
+        .btn-neon:hover { background: var(--neon); color: #000; box-shadow: 0 0 20px var(--neon); transform: translateY(-2px); }
+        
+        .scanline { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03)); z-index: 99; background-size: 100% 4px, 3px 100%; pointer-events: none; }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 md:p-8">
+    <div class="scanline"></div>
 
-    <div class="max-w-7xl mx-auto">
-        <header class="flex justify-between items-end mb-8 border-b border-slate-800 pb-4">
-            <div>
-                <h1 class="font-header text-3xl font-black text-cyan-400 italic">RESGATE_116 // OPS</h1>
-                <p class="text-[10px] tracking-widest text-slate-500 uppercase">Gestão de Combustível e Performance</p>
+    <div class="max-w-7xl mx-auto relative z-10">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-cyan-900/30 pb-6">
+            <div class="flex items-center gap-6">
+                <img src="RESGATE NOVA SEM FUNDO.jpg" alt="Logo Resgate 116" class="h-20 w-20 object-contain drop-shadow-[0_0_10px_rgba(0,242,255,0.5)]">
+                <div>
+                    <h1 class="font-header text-3xl font-black text-cyan-400 italic leading-none">RESGATE_116 // OPS</h1>
+                    <p class="text-[10px] tracking-[0.4em] text-slate-500 uppercase mt-2">Fuel Performance Intelligence</p>
+                </div>
             </div>
-            <nav class="flex gap-6 font-header text-[12px]">
-                <button onclick="switchTab('lançamento')" id="tab-lançamento" class="tab-active pb-2">LANÇAMENTO</button>
-                <button onclick="switchTab('frota')" id="tab-frota" class="pb-2 text-slate-500">FROTA</button>
-                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="pb-2 text-slate-500">DASHBOARD</button>
+            
+            <nav class="flex gap-8 mt-6 md:mt-0 font-header text-xs">
+                <button onclick="switchTab('lançamento')" id="tab-lançamento" class="tab-active py-2 transition-all">LANÇAMENTO</button>
+                <button onclick="switchTab('frota')" id="tab-frota" class="text-slate-500 py-2 transition-all hover:text-cyan-300">FROTA</button>
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="text-slate-500 py-2 transition-all hover:text-cyan-300">DASHBOARD</button>
             </nav>
         </header>
 
-        <section id="sec-lançamento" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="glass p-6 rounded-2xl h-fit">
-                <h2 class="font-header text-lg mb-4 text-cyan-400 italic">Novo Abastecimento</h2>
-                <div class="space-y-4 text-sm">
+        <section id="sec-lançamento" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="glass p-6 rounded-3xl h-fit border-t-4 border-t-cyan-500">
+                <h2 class="font-header text-lg mb-6 text-cyan-300 flex items-center gap-2 italic"> <span class="w-2 h-2 bg-cyan-400 rounded-full animate-ping"></span> NOVO ABASTECIMENTO</h2>
+                <div class="space-y-5">
                     <div>
-                        <label class="block text-slate-500 mb-1">Viatura</label>
-                        <select id="selViatura" class="w-full p-3 rounded-lg"></select>
+                        <label class="text-[10px] text-cyan-700 uppercase font-bold">Selecionar Viatura</label>
+                        <select id="selViatura" class="w-full p-4 rounded-xl mt-1"></select>
                     </div>
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-slate-500 mb-1">Litros</label>
-                            <input id="inLitros" type="number" step="0.01" class="w-full p-3 rounded-lg" placeholder="0.00">
+                            <label class="text-[10px] text-cyan-700 uppercase font-bold">Litros</label>
+                            <input id="inLitros" type="number" step="0.01" class="w-full p-4 rounded-xl mt-1" placeholder="0.00">
                         </div>
                         <div>
-                            <label class="block text-slate-500 mb-1">Hodômetro</label>
-                            <input id="inKM" type="number" class="w-full p-3 rounded-lg" placeholder="KM Atual">
+                            <label class="text-[10px] text-cyan-700 uppercase font-bold">Hodômetro</label>
+                            <input id="inKM" type="number" class="w-full p-4 rounded-xl mt-1" placeholder="KM Total">
                         </div>
                     </div>
-                    <button onclick="registrarAbastecimento()" class="btn-primary w-full py-4 rounded-xl font-header font-bold shadow-lg shadow-cyan-900/20">SALVAR REGISTRO</button>
+                    <button onclick="registrarAbastecimento()" class="btn-neon w-full py-5 rounded-2xl font-header mt-4 text-lg">EFETUAR REGISTRO</button>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 glass rounded-2xl overflow-hidden">
-                <div class="p-4 bg-slate-900/50 border-b border-slate-800 flex justify-between items-center">
-                    <span class="font-header text-sm">Últimos Lançamentos</span>
-                    <input type="text" id="filtroPlaca" oninput="filtrarTabela()" placeholder="Filtrar Placa..." class="text-xs p-2 rounded border border-slate-700 bg-transparent">
+            <div class="lg:col-span-2 glass rounded-3xl overflow-hidden flex flex-col">
+                <div class="p-5 bg-slate-900/80 border-b border-slate-800 flex justify-between items-center">
+                    <h3 class="font-header text-sm text-cyan-500 tracking-tighter">HISTÓRICO RECENTE</h3>
+                    <input type="text" id="filtroPlaca" oninput="filtrarTabela()" placeholder="Buscar placa..." class="text-xs p-2 rounded-lg w-40">
                 </div>
-                <div class="overflow-x-auto max-h-[500px]">
-                    <table class="w-full text-xs">
-                        <thead class="sticky top-0 bg-slate-900 text-slate-500">
+                <div class="overflow-y-auto max-h-[600px]">
+                    <table class="w-full text-left text-[11px] font-mono">
+                        <thead class="sticky top-0 bg-slate-950 text-slate-500 uppercase">
                             <tr>
-                                <th class="p-4 text-left">DATA</th>
-                                <th class="p-4 text-left">VIATURA</th>
-                                <th class="p-4 text-left">KM</th>
-                                <th class="p-4 text-left">LITROS</th>
-                                <th class="p-4 text-left">MÉDIA</th>
+                                <th class="p-4 border-b border-slate-800">Data</th>
+                                <th class="p-4 border-b border-slate-800">Viatura</th>
+                                <th class="p-4 border-b border-slate-800">KM</th>
+                                <th class="p-4 border-b border-slate-800">LITROS</th>
+                                <th class="p-4 border-b border-slate-800">MÉDIA</th>
                             </tr>
                         </thead>
                         <tbody id="listaAbastecimentos" class="divide-y divide-slate-800"></tbody>
@@ -80,47 +90,61 @@
         </section>
 
         <section id="sec-frota" class="hidden">
-            <div class="glass p-8 rounded-2xl max-w-2xl mx-auto">
-                <h2 class="font-header text-xl mb-6 text-cyan-400">Cadastrar Nova Viatura</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <input id="cadPlaca" type="text" placeholder="PLACA (Ex: ABC-1234)" class="p-4 rounded-xl uppercase">
-                    <input id="cadModelo" type="text" placeholder="MODELO (Ex: Scania R450)" class="p-4 rounded-xl">
+            <div class="glass p-8 rounded-3xl max-w-4xl mx-auto">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                    <div class="md:col-span-1">
+                        <label class="text-[10px] text-cyan-700 uppercase font-bold">Placa</label>
+                        <input id="cadPlaca" type="text" class="w-full p-4 rounded-xl mt-1 uppercase" placeholder="ABC-1234">
+                    </div>
+                    <div class="md:col-span-1">
+                        <label class="text-[10px] text-cyan-700 uppercase font-bold">Modelo</label>
+                        <input id="cadModelo" type="text" class="w-full p-4 rounded-xl mt-1" placeholder="Scania / Iveco / VW">
+                    </div>
+                    <button onclick="cadastrarViatura()" class="btn-neon py-4 rounded-xl">ADICIONAR VIATURA</button>
                 </div>
-                <button onclick="cadastrarViatura()" class="btn-primary w-full py-4 rounded-xl font-header font-bold">ADICIONAR À FROTA</button>
                 
-                <div class="mt-10 border-t border-slate-800 pt-6">
-                    <h3 class="font-header text-sm mb-4">Viaturas Ativas</h3>
-                    <div id="gridViaturas" class="grid grid-cols-2 md:grid-cols-3 gap-2 text-[10px]"></div>
+                <div class="mt-12">
+                    <h3 class="font-header text-sm mb-6 border-b border-slate-800 pb-2 text-cyan-500">VIATURAS CADASTRADAS</h3>
+                    <div id="gridViaturas" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3"></div>
                 </div>
             </div>
         </section>
 
-        <section id="sec-dashboard" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div id="cardMelhor" class="glass p-6 rounded-2xl border-l-8 border-green-500 shadow-2xl shadow-green-900/10 transition-all hover:scale-105"></div>
-                <div id="cardPior" class="glass p-6 rounded-2xl border-l-8 border-red-500 shadow-2xl shadow-red-900/10 transition-all hover:scale-105"></div>
+        <section id="sec-dashboard" class="hidden space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div id="cardMelhor" class="glass p-8 rounded-3xl border-l-[12px] border-green-500 transition-all hover:translate-y-[-5px]"></div>
+                <div id="cardPior" class="glass p-8 rounded-3xl border-l-[12px] border-red-500 transition-all hover:translate-y-[-5px]"></div>
             </div>
             
-            <div class="glass p-6 rounded-2xl">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="font-header text-lg">Evolução de Performance</h2>
-                    <select id="selGraficoViatura" onchange="gerarGrafico()" class="p-2 text-xs rounded bg-slate-800"></select>
+            <div class="glass p-8 rounded-3xl">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <h2 class="font-header text-xl text-cyan-400 italic">ANÁLISE DE PERFORMANCE POR VIATURA</h2>
+                    <select id="selGraficoViatura" onchange="gerarGrafico()" class="p-3 rounded-xl bg-slate-900 border border-slate-700 text-sm md:w-64"></select>
                 </div>
-                <div class="h-[400px]">
+                <div class="h-[450px]">
                     <canvas id="meuGrafico"></canvas>
                 </div>
             </div>
         </section>
+
+        <footer class="mt-12 text-center border-t border-slate-900 pt-6">
+            <p class="text-[10px] font-header tracking-[0.3em] text-slate-600">
+                PROJETO DESENVOLVIDO POR: <span class="text-cyan-500">DEV. PATRICK ALMEIDA</span>
+            </p>
+        </footer>
     </div>
 
     <script>
+        // CONFIGURAÇÕES SUPABASE
         const _URL = "https://olldeytolxdzxxvciyon.supabase.co";
         const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sbGRleXRvbHhkenh4dmNpeW9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODM2MDUsImV4cCI6MjA5MTE1OTYwNX0.r3LxebF13PYt-boPFqPUsZ03y5CSD4-6iSUEE_huhXE";
-        const supabase = supabase.createClient(_URL, _KEY);
+        const supabaseClient = supabase.createClient(_URL, _KEY);
+        
         let viaturas = [];
         let abastecimentos = [];
         let chartInstance = null;
 
+        // INICIALIZAÇÃO
         async function init() {
             await carregarViaturas();
             await carregarAbastecimentos();
@@ -128,52 +152,60 @@
             renderDashboard();
         }
 
-        function switchTab(tab) {
-            ['lançamento', 'frota', 'dashboard'].forEach(t => {
-                document.getElementById('sec-'+t).classList.add('hidden');
-                document.getElementById('tab-'+t).classList.remove('tab-active');
-                document.getElementById('tab-'+t).classList.add('text-slate-500');
+        // NAVEGAÇÃO ENTRE ABAS
+        function switchTab(tabId) {
+            const tabs = ['lançamento', 'frota', 'dashboard'];
+            tabs.forEach(id => {
+                document.getElementById('sec-' + id).classList.add('hidden');
+                document.getElementById('tab-' + id).classList.replace('text-cyan-500', 'text-slate-500');
+                document.getElementById('tab-' + id).classList.remove('tab-active');
             });
-            document.getElementById('sec-'+tab).classList.remove('hidden');
-            document.getElementById('tab-'+tab).classList.add('tab-active');
-            if(tab === 'dashboard') gerarGrafico();
+            document.getElementById('sec-' + tabId).classList.remove('hidden');
+            document.getElementById('tab-' + tabId).classList.add('tab-active');
+            
+            if(tabId === 'dashboard') {
+                setTimeout(gerarGrafico, 100);
+            }
         }
 
         async function carregarViaturas() {
-            const { data } = await supabase.from('viaturas').select('*').order('placa');
-            viaturas = data;
+            const { data } = await supabaseClient.from('viaturas').select('*').order('placa');
+            viaturas = data || [];
             const selectLaunch = document.getElementById('selViatura');
             const selectChart = document.getElementById('selGraficoViatura');
             const options = viaturas.map(v => `<option value="${v.id}">${v.placa} - ${v.modelo}</option>`).join('');
             selectLaunch.innerHTML = options;
             selectChart.innerHTML = options;
-            document.getElementById('gridViaturas').innerHTML = viaturas.map(v => `<div class="bg-slate-900 p-2 rounded border border-slate-800">${v.placa}</div>`).join('');
+            document.getElementById('gridViaturas').innerHTML = viaturas.map(v => `
+                <div class="bg-slate-900/50 p-3 rounded-xl border border-slate-800 text-center font-bold hover:border-cyan-500/50 transition-colors">
+                    ${v.placa}
+                </div>`).join('');
         }
 
         async function cadastrarViatura() {
             const placa = document.getElementById('cadPlaca').value.toUpperCase();
             const modelo = document.getElementById('cadModelo').value;
-            if(!placa || !modelo) return alert("Preencha tudo!");
-            const { error } = await supabase.from('viaturas').insert([{ placa, modelo }]);
+            if(!placa || !modelo) return alert("Erro: Preencha Placa e Modelo!");
+            const { error } = await supabaseClient.from('viaturas').insert([{ placa, modelo }]);
             if(error) alert("Erro: " + error.message);
-            else { alert("Viatura cadastrada!"); location.reload(); }
+            else { alert("Viatura cadastrada com sucesso!"); init(); }
         }
 
         async function carregarAbastecimentos() {
-            const { data } = await supabase.from('abastecimentos').select('*, viaturas(placa, modelo)').order('data_hora', { ascending: false });
-            abastecimentos = data;
+            const { data } = await supabaseClient.from('abastecimentos').select('*, viaturas(placa, modelo)').order('data_hora', { ascending: false });
+            abastecimentos = data || [];
         }
 
         function renderTabela(filtro = "") {
             const container = document.getElementById('listaAbastecimentos');
             const dadosFiltrados = abastecimentos.filter(a => a.viaturas.placa.includes(filtro.toUpperCase()));
             container.innerHTML = dadosFiltrados.map(a => `
-                <tr class="hover:bg-cyan-500/5 transition-colors">
-                    <td class="p-4 text-slate-500">${new Date(a.data_hora).toLocaleString()}</td>
-                    <td class="p-4 font-bold text-cyan-400">${a.viaturas.placa}</td>
-                    <td class="p-4">${a.hodometro_atual} KM</td>
-                    <td class="p-4">${a.litros}L</td>
-                    <td class="p-4 font-header ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho || '---'}</td>
+                <tr class="hover:bg-cyan-500/10 transition-colors group">
+                    <td class="p-4 text-slate-500">${new Date(a.data_hora).toLocaleDateString()} ${new Date(a.data_hora).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+                    <td class="p-4 font-bold text-cyan-400 group-hover:text-cyan-200">${a.viaturas.placa}</td>
+                    <td class="p-4 text-slate-300 font-bold">${a.hodometro_atual.toLocaleString()} KM</td>
+                    <td class="p-4 text-slate-300">${a.litros} L</td>
+                    <td class="p-4 font-header ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'} shadow-sm">${a.media_trecho || '---'}</td>
                 </tr>
             `).join('');
         }
@@ -188,14 +220,15 @@
             const km = parseInt(document.getElementById('inKM').value);
             const v = viaturas.find(x => x.id === v_id);
 
-            if(km <= v.ultimo_hodometro) return alert("ERRO: Hodômetro menor que o anterior ("+v.ultimo_hodometro+")");
+            if(!litros || !km) return alert("Preencha todos os campos!");
+            if(km <= v.ultimo_hodometro) return alert("⚠️ ALERTA: Hodômetro menor ou igual ao anterior ("+v.ultimo_hodometro+" KM)");
             
             let media = v.ultimo_hodometro > 0 ? ((km - v.ultimo_hodometro) / litros).toFixed(2) : 0;
 
-            const { error } = await supabase.from('abastecimentos').insert([{ viatura_id: v_id, litros, hodometro_atual: km, media_trecho: media }]);
+            const { error } = await supabaseClient.from('abastecimentos').insert([{ viatura_id: v_id, litros, hodometro_atual: km, media_trecho: media }]);
             if(!error) {
-                await supabase.from('viaturas').update({ ultimo_hodometro: km }).eq('id', v_id);
-                alert("REGISTRADO!");
+                await supabaseClient.from('viaturas').update({ ultimo_hodometro: km }).eq('id', v_id);
+                alert("REGISTRO SALVO NO BANCO DE DADOS!");
                 location.reload();
             }
         }
@@ -204,7 +237,6 @@
             const validos = abastecimentos.filter(a => a.media_trecho > 0);
             if(validos.length === 0) return;
             
-            // Agrupar por viatura para pegar a média global de cada uma
             const mediasPorViatura = {};
             validos.forEach(a => {
                 if(!mediasPorViatura[a.viaturas.placa]) mediasPorViatura[a.viaturas.placa] = [];
@@ -219,8 +251,8 @@
             const melhor = ranking[0];
             const pior = ranking[ranking.length - 1];
 
-            document.getElementById('cardMelhor').innerHTML = `<p class="text-[10px] text-green-500 uppercase font-bold tracking-widest">TOP PERFORMANCE</p><h3 class="text-4xl font-header mt-2">${melhor.media} <span class="text-sm">KM/L</span></h3><p class="text-slate-400 mt-1">${melhor.placa}</p>`;
-            document.getElementById('cardPior').innerHTML = `<p class="text-[10px] text-red-500 uppercase font-bold tracking-widest">MENOR PERFORMANCE</p><h3 class="text-4xl font-header mt-2">${pior.media} <span class="text-sm">KM/L</span></h3><p class="text-slate-400 mt-1">${pior.placa}</p>`;
+            document.getElementById('cardMelhor').innerHTML = `<p class="text-[10px] text-green-500 uppercase font-black tracking-widest">TOP PERFORMANCE</p><h3 class="text-5xl font-header mt-2 text-green-400">${melhor.media} <span class="text-xs">KM/L</span></h3><p class="text-slate-400 mt-2 font-bold">${melhor.placa}</p>`;
+            document.getElementById('cardPior').innerHTML = `<p class="text-[10px] text-red-500 uppercase font-black tracking-widest">MENOR PERFORMANCE</p><h3 class="text-5xl font-header mt-2 text-red-500">${pior.media} <span class="text-xs">KM/L</span></h3><p class="text-slate-400 mt-2 font-bold">${pior.placa}</p>`;
         }
 
         function gerarGrafico() {
@@ -230,8 +262,9 @@
             const labels = dadosViatura.map(a => new Date(a.data_hora).toLocaleDateString());
             const valores = dadosViatura.map(a => a.media_trecho);
 
-            if(chartInstance) chartInstance.destroy();
             const ctx = document.getElementById('meuGrafico').getContext('2d');
+            if(chartInstance) chartInstance.destroy();
+            
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
@@ -243,19 +276,19 @@
                         backgroundColor: 'rgba(0, 242, 255, 0.1)',
                         fill: true,
                         tension: 0.4,
-                        borderWidth: 3,
-                        pointRadius: 5,
+                        borderWidth: 4,
+                        pointRadius: 6,
                         pointBackgroundColor: '#00f2ff'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
                     scales: {
-                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
-                        x: { grid: { display: false }, ticks: { color: '#64748b' } }
-                    }
+                        y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } },
+                        x: { grid: { display: false }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono' } } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
             });
         }

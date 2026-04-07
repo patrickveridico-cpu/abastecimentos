@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FUEL INTELLIGENCE // RESGATE 116</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #00f2ff; --neon-red: #ff0055; }
+        body { 
+            background: #020617; color: #e2e8f0; font-family: 'JetBrains Mono', monospace;
+            overflow-x: hidden;
+        }
+        .font-header { font-family: 'Orbitron', sans-serif; }
+        
+        /* Efeito de Scanline (Linhas de TV) */
+        body::before {
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 9999; background-size: 100% 4px, 3px 100%; pointer-events: none;
+        }
+
+        .glass { background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(0, 242, 255, 0.2); }
+        .neon-border:focus { border-color: var(--neon); box-shadow: 0 0 15px rgba(0, 242, 255, 0.4); }
+        .btn-neon { background: transparent; border: 2px solid var(--neon); color: var(--neon); transition: 0.3s; text-shadow: 0 0 10px var(--neon); box-shadow: 0 0 10px rgba(0, 242, 255, 0.2); }
+        .btn-neon:hover { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); }
+        
+        /* Animação de Erro */
+        .error-shake { animation: shake 0.5s; border-color: var(--neon-red) !important; }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-10px); } 75% { transform: translateX(10px); } }
+    </style>
+</head>
+<body class="p-4 md:p-10">
+
+    <div class="max-w-6xl mx-auto relative z-10">
+        <header class="flex flex-col md:flex-row justify-between items-center mb-10 border-b-2 border-cyan-900/50 pb-6">
+            <div class="text-center md:text-left">
+                <h1 class="font-header text-3xl md:text-5xl font-black italic text-cyan-400 tracking-tighter">FUEL_INTEL // 1.0</h1>
+                <p class="text-[10px] tracking-[0.5em] text-cyan-700 uppercase mt-2">Sistema de Gestão de Frota - Grupo Resgate</p>
+            </div>
+            <div id="status" class="mt-4 md:mt-0 px-4 py-1 border border-cyan-500 text-cyan-500 text-xs font-bold animate-pulse">SISTEMA ONLINE</div>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="glass p-6 rounded-2xl">
+                <h2 class="font-header text-xl mb-6 text-cyan-300 flex items-center gap-2">
+                    <span class="w-3 h-3 bg-cyan-500 rounded-full animate-ping"></span> NOVO REGISTRO
+                </h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] uppercase text-cyan-700">Selecione a Viatura</label>
+                        <select id="selectViatura" class="w-full bg-slate-950 p-3 rounded border border-slate-800 outline-none neon-border"></select>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] uppercase text-cyan-700">Litros</label>
+                            <input id="inputLitros" type="number" step="0.01" class="w-full bg-slate-950 p-3 rounded border border-slate-800 outline-none neon-border" placeholder="0.00">
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase text-cyan-700">Hodômetro (KM)</label>
+                            <input id="inputKM" type="number" class="w-full bg-slate-950 p-3 rounded border border-slate-800 outline-none neon-border" placeholder="KM Atual">
+                        </div>
+                    </div>
+                    <button onclick="enviarAbastecimento()" class="btn-neon w-full py-4 rounded-xl font-header font-bold mt-4">REGISTRAR NO BANCO</button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="topViatura" class="glass p-4 rounded-xl border-l-4 border-green-500">
+                        <p class="text-[10px] text-green-500 uppercase">Melhor Média</p>
+                        <h3 class="text-2xl font-header">-- KM/L</h3>
+                    </div>
+                    <div id="worstViatura" class="glass p-4 rounded-xl border-l-4 border-red-500">
+                        <p class="text-[10px] text-red-500 uppercase">Pior Média</p>
+                        <h3 class="text-2xl font-header">-- KM/L</h3>
+                    </div>
+                </div>
+
+                <div class="glass rounded-2xl overflow-hidden">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-cyan-900/20 text-cyan-500 font-header">
+                            <tr>
+                                <th class="p-4">DATA</th>
+                                <th class="p-4">PLACA</th>
+                                <th class="p-4">KM</th>
+                                <th class="p-4">LITROS</th>
+                                <th class="p-4">MÉDIA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabelaDados"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const _URL = "https://olldeytolxdzxxvciyon.supabase.co";
+        const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sbGRleXRvbHhkenh4dmNpeW9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODM2MDUsImV4cCI6MjA5MTE1OTYwNX0.r3LxebF13PYt-boPFqPUsZ03y5CSD4-6iSUEE_huhXE";
+        const supabase = bootstrap.createClient(_URL, _KEY);
+
+        let viaturasData = [];
+
+        async function carregarDados() {
+            // Carregar Viaturas
+            const { data: viaturas } = await supabase.from('viaturas').select('*');
+            viaturasData = viaturas;
+            const select = document.getElementById('selectViatura');
+            select.innerHTML = viaturas.map(v => `<option value="${v.id}">${v.placa} (${v.modelo})</option>`).join('');
+
+            // Carregar Abastecimentos
+            const { data: logs } = await supabase.from('abastecimentos').select('*, viaturas(placa)').order('data_hora', { ascending: false }).limit(10);
+            const tabela = document.getElementById('tabelaDados');
+            tabela.innerHTML = logs.map(l => `
+                <tr class="border-b border-slate-800">
+                    <td class="p-4 text-slate-500">${new Date(l.data_hora).toLocaleDateString()}</td>
+                    <td class="p-4 font-bold text-cyan-400">${l.viaturas.placa}</td>
+                    <td class="p-4">${l.hodometro_atual}</td>
+                    <td class="p-4">${l.litros}L</td>
+                    <td class="p-4 font-header ${l.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${l.media_trecho || '0.0'}</td>
+                </tr>
+            `).join('');
+
+            calcularRanking(logs);
+        }
+
+        async function enviarAbastecimento() {
+            const v_id = document.getElementById('selectViatura').value;
+            const litros = parseFloat(document.getElementById('inputLitros').value);
+            const km_atual = parseInt(document.getElementById('inputKM').value);
+            
+            const viatura = viaturasData.find(v => v.id === v_id);
+
+            // TRAVA DE SEGURANÇA
+            if (km_atual <= viatura.ultimo_hodometro) {
+                const campo = document.getElementById('inputKM');
+                campo.classList.add('error-shake');
+                alert("🚨 ERRO CRÍTICO: Hodômetro não pode ser menor ou igual ao último registro (" + viatura.ultimo_hodometro + " KM)");
+                setTimeout(() => campo.classList.remove('error-shake'), 500);
+                return;
+            }
+
+            // Cálculo da média parcial do trecho
+            let media = 0;
+            if (viatura.ultimo_hodometro > 0) {
+                media = ((km_atual - viatura.ultimo_hodometro) / litros).toFixed(2);
+            }
+
+            // Inserir no Banco
+            const { error } = await supabase.from('abastecimentos').insert([
+                { viatura_id: v_id, litros: litros, hodometro_atual: km_atual, media_trecho: media }
+            ]);
+
+            if (!error) {
+                // Atualizar último hodômetro da viatura
+                await supabase.from('viaturas').update({ ultimo_hodometro: km_atual }).eq('id', v_id);
+                alert("✅ REGISTRO PROCESSADO COM SUCESSO!");
+                location.reload();
+            }
+        }
+
+        function calcularRanking(logs) {
+            if (logs.length === 0) return;
+            const validLogs = logs.filter(l => l.media_trecho > 0);
+            const sorted = [...validLogs].sort((a, b) => b.media_trecho - a.media_trecho);
+            
+            if (sorted.length > 0) {
+                document.getElementById('topViatura').innerHTML = `<p class="text-[10px] text-green-500 uppercase">Melhor Média</p><h3 class="text-2xl font-header text-green-400">${sorted[0].media_trecho} KM/L</h3><p class="text-[10px]">${sorted[0].viaturas.placa}</p>`;
+                document.getElementById('worstViatura').innerHTML = `<p class="text-[10px] text-red-500 uppercase">Pior Média</p><h3 class="text-2xl font-header text-red-400">${sorted[sorted.length-1].media_trecho} KM/L</h3><p class="text-[10px]">${sorted[sorted.length-1].viaturas.placa}</p>`;
+            }
+        }
+
+        carregarDados();
+    </script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        // Pequeno ajuste para carregar o Supabase corretamente via CDN
+        const bootstrap = { createClient: supabase.createClient };
+    </script>
+</body>
+</html>

@@ -15,44 +15,39 @@
         body { background-color: var(--bg-main); color: #f1f5f9; font-family: 'Inter', sans-serif; }
         .font-brand { font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; }
         
-        /* Layout Clean */
         .card-pro { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.25rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         .input-pro { background: #0f172a; border: 1px solid #334155; border-radius: 0.75rem; padding: 0.75rem; color: #f1f5f9; width: 100%; transition: all 0.2s; }
-        .input-pro:focus { border-color: var(--accent); outline: none; ring: 2px solid rgba(6, 182, 212, 0.2); }
+        .input-pro:focus { border-color: var(--accent); outline: none; }
         
-        /* Tabs Estilo Apple */
         .tab-btn { padding: 0.5rem 1.25rem; border-radius: 0.5rem; transition: all 0.3s; color: #94a3b8; font-weight: 600; font-size: 0.875rem; }
         .tab-active { background: var(--accent); color: #000; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3); }
         
-        /* Tabela Profissional */
-        table { border-collapse: separate; border-spacing: 0 8px; }
         tr.row-pro { background: #1e293b; transition: transform 0.2s; }
-        tr.row-pro:hover { transform: scale(1.01); background: #334155; }
+        tr.row-pro:hover { transform: scale(1.005); background: #334155; }
         td { padding: 1rem; }
         td:first-child { border-radius: 0.75rem 0 0 0.75rem; }
         td:last-child { border-radius: 0 0.75rem 0.75rem 0; }
 
         .badge-cat { background: rgba(6, 182, 212, 0.1); color: var(--accent); padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .btn-action { background: var(--accent); color: #000; font-weight: 800; border-radius: 0.75rem; transition: all 0.2s; }
-        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
     </style>
 </head>
-<body class="min-h-screen pb-12">
+<body class="min-h-screen pb-12" onload="init()">
 
-    <nav class="sticky top-0 z-50 bg-[#0f172a/80] backdrop-blur-md border-b border-slate-800 mb-8 px-4 md:px-8 py-4">
+    <nav class="sticky top-0 z-50 bg-[#0f172a] border-b border-slate-800 mb-8 px-4 md:px-8 py-4">
         <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <img src="RESGATE NOVA SEM FUNDO.jpg" alt="Logo" class="h-12 w-12 object-contain">
                 <div>
                     <h1 class="font-brand text-2xl font-bold leading-none text-white">RESGATE 116 <span class="text-cyan-500 text-sm">PRO</span></h1>
-                    <p class="text-[9px] uppercase tracking-widest text-slate-500">Gestão de Combustível v3.0</p>
+                    <p class="text-[9px] uppercase tracking-widest text-slate-500">Controle de Combustível</p>
                 </div>
             </div>
             
             <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
                 <button onclick="switchTab('lançamento')" id="tab-lançamento" class="tab-btn tab-active">Lançamentos</button>
-                <button onclick="switchTab('frota')" id="tab-frota" class="tab-btn">Minha Frota</button>
-                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn">Dashboard</button>
+                <button onclick="switchTab('frota')" id="tab-frota" class="tab-btn">Frota</button>
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn">Estatísticas</button>
             </div>
         </div>
     </nav>
@@ -62,131 +57,90 @@
         <section id="sec-lançamento" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
                 <div class="card-pro p-6">
-                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
-                        <span class="w-1.5 h-6 bg-cyan-500 rounded-full"></span> 
-                        Registrar Abastecimento
-                    </h3>
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">Novo Registro</h3>
                     <div class="space-y-4">
-                        <div class="space-y-1">
-                            <label class="text-xs font-bold text-slate-400 ml-1">Viatura / Unidade</label>
-                            <select id="selViatura" class="input-pro"></select>
+                        <select id="selViatura" class="input-pro"></select>
+                        <div class="grid grid-cols-2 gap-3">
+                            <input id="inData" type="date" class="input-pro text-xs">
+                            <input id="inHora" type="time" step="1" class="input-pro text-xs">
                         </div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 ml-1">Data</label>
-                                <input id="inData" type="date" class="input-pro text-sm">
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 ml-1">Horário</label>
-                                <input id="inHora" type="time" step="1" class="input-pro text-sm">
-                            </div>
+                            <input id="inLitros" type="text" oninput="mascaraDecimal(this)" class="input-pro text-cyan-400 font-bold" placeholder="Litros">
+                            <input id="inKM" type="text" oninput="mascaraKM(this)" class="input-pro font-bold" placeholder="KM Atual">
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 ml-1">Litros</label>
-                                <input id="inLitros" type="text" oninput="mascaraDecimal(this)" class="input-pro text-cyan-400 font-bold" placeholder="0,000">
-                            </div>
-                            <div class="space-y-1">
-                                <label class="text-xs font-bold text-slate-400 ml-1">Hodômetro</label>
-                                <input id="inKM" type="text" oninput="mascaraKM(this)" class="input-pro font-bold" placeholder="000.000">
-                            </div>
-                        </div>
-                        <button onclick="registrarAbastecimento()" class="btn-action w-full py-4 mt-4 text-sm uppercase">Salvar Registro</button>
+                        <button onclick="registrarAbastecimento()" class="btn-action w-full py-4 mt-2">SALVAR</button>
                     </div>
                 </div>
             </div>
 
             <div class="lg:col-span-8">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Feed de Operações</h3>
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Últimos Abastecimentos</h3>
                     <div class="flex gap-2">
                         <input type="text" id="filtroPlacaGeral" oninput="renderTabela()" placeholder="Buscar placa..." class="input-pro py-1 px-3 text-xs w-32">
-                        <button onclick="exportarPDF('all')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 rounded-lg border border-slate-700">PDF</button>
+                        <button onclick="exportarPDF('all')" class="bg-slate-800 text-xs px-3 rounded-lg border border-slate-700">PDF</button>
                     </div>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <tbody id="listaAbastecimentos"></tbody>
-                    </table>
-                </div>
+                <div class="overflow-x-auto"><table class="w-full text-sm"><tbody id="listaAbastecimentos"></tbody></table></div>
             </div>
         </section>
 
-        <section id="sec-frota" class="hidden animate-fadeIn">
+        <section id="sec-frota" class="hidden">
             <div class="card-pro p-8 mb-8">
-                <h2 class="text-xl font-bold mb-6 text-white">Gerenciar Veículos</h2>
+                <h2 class="text-xl font-bold mb-6">Cadastro de Veículo</h2>
                 <input type="hidden" id="editId">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <input id="cadApelido" type="text" placeholder="ID FROTA" class="input-pro font-black">
+                    <input id="cadApelido" type="text" placeholder="ID FROTA (Ex: 116)" class="input-pro font-bold">
                     <input id="cadPlaca" type="text" placeholder="PLACA" class="input-pro uppercase">
-                    <input id="cadModelo" type="text" placeholder="MODELO" class="input-pro">
+                    <input id="cadModelo" type="text" placeholder="MODELO/ANO" class="input-pro">
                     <select id="cadCategoria" class="input-pro">
                         <option value="Carro">🚗 CARRO</option>
                         <option value="3/4">🚛 3/4</option>
                         <option value="Caminhão">🚚 CAMINHÃO</option>
                     </select>
-                    <button onclick="salvarViatura()" class="btn-action py-3">CADASTRAR</button>
+                    <button onclick="salvarViatura()" class="btn-action">SALVAR</button>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="gridViaturas"></div>
         </section>
 
-        <section id="sec-dashboard" class="hidden space-y-8 animate-fadeIn">
+        <section id="sec-dashboard" class="hidden space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="rankingsCategoria"></div>
 
             <div class="card-pro p-8">
-                <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-                    <div>
-                        <h2 class="text-2xl font-bold text-white">Análise de Performance</h2>
-                        <p class="text-sm text-slate-500">Selecione uma unidade para ver o raio-x completo</p>
-                    </div>
-                    <div class="flex gap-3">
-                        <select id="selDashViatura" onchange="gerarDashIndividual()" class="input-pro w-64 border-cyan-900/50"></select>
+                <div class="flex flex-col md:flex-row justify-between mb-8 gap-4">
+                    <select id="selDashViatura" onchange="gerarDashIndividual()" class="input-pro w-64"></select>
+                    <div id="alertaFuro" class="hidden bg-red-500/10 border border-red-500/30 p-3 rounded-xl">
+                        <p class="text-red-500 text-[10px] font-black uppercase">Furo de Hodômetro Detectado!</p>
+                        <p id="periodoFuro" class="text-white text-[10px]"></p>
                     </div>
                 </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    <div class="lg:col-span-3 h-[400px]">
-                        <canvas id="graficoEvolucao"></canvas>
-                    </div>
-                    <div class="flex flex-col items-center justify-center p-6 bg-slate-900/50 rounded-3xl border border-slate-800">
-                        <span class="text-xs font-bold text-slate-500 uppercase mb-2">Média Vitalícia</span>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-2 h-[350px]"><canvas id="graficoEvolucao"></canvas></div>
+                    <div class="flex flex-col items-center justify-center p-6 bg-slate-900/50 rounded-2xl border border-slate-800">
+                        <span class="text-xs text-slate-500 uppercase">Média Geral</span>
                         <div id="mediaGeralIndividual" class="text-7xl font-brand font-bold text-cyan-400">0.0</div>
-                        <div id="alertaFuro" class="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl hidden text-center">
-                            <p class="text-red-500 text-[10px] font-black uppercase">Furo no Hodômetro</p>
-                            <p id="periodoFuro" class="text-white text-[10px] mt-1"></p>
-                        </div>
                     </div>
                 </div>
-
-                <div class="mt-12">
-                    <h3 class="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">Extrato de Abastecimentos</h3>
-                    <div class="overflow-hidden rounded-2xl border border-slate-800">
-                        <table class="w-full text-xs text-left">
-                            <thead class="bg-slate-800 text-slate-400">
-                                <tr><th class="p-4">DATA</th><th class="p-4">HODÔMETRO</th><th class="p-4">LITROS</th><th class="p-4">MÉDIA</th></tr>
-                            </thead>
-                            <tbody id="listaHistInd" class="divide-y divide-slate-800 bg-slate-900/30"></tbody>
-                        </table>
-                    </div>
+                <div class="mt-10 overflow-x-auto">
+                    <table class="w-full text-[11px] text-left">
+                        <thead class="bg-slate-800"><tr><th class="p-4">DATA</th><th class="p-4">KM</th><th class="p-4">LITROS</th><th class="p-4">MÉDIA</th></tr></thead>
+                        <tbody id="listaHistInd" class="divide-y divide-slate-800 bg-slate-900/20"></tbody>
+                    </table>
                 </div>
             </div>
         </section>
-
     </main>
 
     <footer class="text-center mt-20 opacity-30 text-[10px] font-brand uppercase tracking-widest">
-        Sistema Desenvolvido por <span class="text-cyan-500">Patrick Almeida</span> // Resgate 116
+        Dev. Patrick Almeida // Resgate 116
     </footer>
 
     <script>
-        // CORE LOGIC (MANTIDA DA V2.1 PARA FUNCIONAR O BANCO)
         const _URL = "https://olldeytolxdzxxvciyon.supabase.co";
         const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sbGRleXRvbHhkenh4dmNpeW9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODM2MDUsImV4cCI6MjA5MTE1OTYwNX0.r3LxebF13PYt-boPFqPUsZ03y5CSD4-6iSUEE_huhXE";
         const supabaseClient = supabase.createClient(_URL, _KEY);
-        let viaturas = [];
-        let abastecimentos = [];
-        let chart = null;
+        let viaturas = [], abastecimentos = [], chart = null;
 
         function mascaraKM(i) {
             let v = i.value.replace(/\D/g, "");
@@ -221,182 +175,100 @@
             const opts = viaturas.map(x => `<option value="${x.id}">#${x.apelido} - ${x.placa}</option>`).join('');
             document.getElementById('selViatura').innerHTML = opts;
             document.getElementById('selDashViatura').innerHTML = opts;
-            
-            renderTabela();
-            renderFrota();
-            renderRankings();
+            renderTabela(); renderFrota(); renderRankings();
         }
 
         function renderTabela() {
-            const filtroPlaca = document.getElementById('filtroPlacaGeral').value.toUpperCase();
-            const filtrados = abastecimentos.filter(a => a.viaturas.placa.includes(filtroPlaca) || a.viaturas.apelido.includes(filtroPlaca));
-
+            const f = document.getElementById('filtroPlacaGeral').value.toUpperCase();
+            const filtrados = abastecimentos.filter(a => a.viaturas.placa.includes(f) || a.viaturas.apelido.includes(f));
             document.getElementById('listaAbastecimentos').innerHTML = filtrados.map(a => `
                 <tr class="row-pro">
-                    <td>
-                        <div class="text-[10px] text-slate-500 font-bold">${new Date(a.data_hora).toLocaleDateString()}</div>
-                        <div class="text-[10px] text-slate-600">${new Date(a.data_hora).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
-                    </td>
-                    <td>
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-black bg-cyan-500 text-black px-1.5 rounded">#${a.viaturas.apelido}</span>
-                            <span class="text-[11px] font-bold text-slate-300">${a.viaturas.placa}</span>
-                        </div>
-                    </td>
-                    <td class="text-[12px] font-bold">${a.hodometro_atual.toLocaleString('pt-BR')} <span class="text-[9px] text-slate-500">KM</span></td>
-                    <td class="text-[12px] font-bold">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits: 3})} <span class="text-[9px] text-slate-500">L</span></td>
-                    <td class="text-right">
-                        <span class="font-brand text-lg ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</span>
-                        <span class="text-[9px] text-slate-600 ml-1">km/l</span>
-                    </td>
+                    <td class="text-[10px] text-slate-500 font-bold">${new Date(a.data_hora).toLocaleDateString()}</td>
+                    <td><div class="flex items-center gap-2">
+                        <span class="text-xs font-black bg-cyan-500 text-black px-1.5 rounded">#${a.viaturas.apelido}</span>
+                        <span class="text-[11px] font-bold text-slate-300">${a.viaturas.placa}</span>
+                    </div></td>
+                    <td class="text-[12px] font-bold">${a.hodometro_atual.toLocaleString()} <span class="text-[9px] text-slate-500">KM</span></td>
+                    <td class="text-[12px] font-bold">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits:3})} <span class="text-[9px] text-slate-500">L</span></td>
+                    <td class="text-right font-brand text-lg ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</td>
                 </tr>
             `).join('');
         }
 
         function renderFrota() {
             document.getElementById('gridViaturas').innerHTML = viaturas.map(v => `
-                <div class="card-pro p-6 flex flex-col items-center text-center group">
-                    <div class="badge-cat mb-3">${v.categoria || 'N/A'}</div>
-                    <div class="text-3xl font-brand font-bold text-white mb-1">#${v.apelido}</div>
-                    <div class="text-[10px] font-black text-cyan-500 tracking-widest mb-4">${v.placa}</div>
-                    <div class="text-[11px] text-slate-400 mb-6 h-8 line-clamp-2">${v.modelo}</div>
+                <div class="card-pro p-6 flex flex-col items-center">
+                    <div class="badge-cat mb-3">${v.categoria || 'Carro'}</div>
+                    <div class="text-3xl font-brand font-bold text-white">#${v.apelido}</div>
+                    <div class="text-[10px] text-cyan-500 font-black mb-4">${v.placa}</div>
                     <div class="flex gap-4 w-full pt-4 border-t border-slate-800">
-                        <button onclick="prepararEdicao('${v.id}')" class="text-[10px] font-bold uppercase text-slate-400 hover:text-cyan-400 flex-1">Editar</button>
-                        <button onclick="excluirViatura('${v.id}')" class="text-[10px] font-bold uppercase text-slate-400 hover:text-red-500 flex-1">Excluir</button>
+                        <button onclick="prepararEdicao('${v.id}')" class="text-[10px] font-bold uppercase hover:text-cyan-400 flex-1">Editar</button>
+                        <button onclick="excluirViatura('${v.id}')" class="text-[10px] font-bold uppercase hover:text-red-500 flex-1">Excluir</button>
                     </div>
                 </div>
             `).join('');
         }
 
         function renderRankings() {
-            const categorias = ['Carro', '3/4', 'Caminhão'];
-            const icones = { 'Carro': '🚗', '3/4': '🚛', 'Caminhão': '🚚' };
-            
-            document.getElementById('rankingsCategoria').innerHTML = categorias.map(cat => {
+            const cats = ['Carro', '3/4', 'Caminhão'];
+            const icons = { 'Carro': '🚗', '3/4': '🚛', 'Caminhão': '🚚' };
+            document.getElementById('rankingsCategoria').innerHTML = cats.map(cat => {
                 const logsCat = abastecimentos.filter(a => a.viaturas.categoria === cat && a.media_trecho > 0);
                 const medias = {};
-                logsCat.forEach(l => {
-                    if(!medias[l.viaturas.apelido]) medias[l.viaturas.apelido] = [];
-                    medias[l.viaturas.apelido].push(Number(l.media_trecho));
-                });
-
-                const ranking = Object.keys(medias).map(apelido => {
-                    const avg = medias[apelido].reduce((a,b) => a+b, 0) / medias[apelido].length;
-                    return { apelido, avg: avg.toFixed(2) };
-                }).sort((a,b) => b.avg - a.avg);
-
-                const melhor = ranking[0] || { apelido: '---', avg: '0.00' };
-                const pior = ranking.length > 1 ? ranking[ranking.length - 1] : { apelido: '---', avg: '0.00' };
-
-                return `
-                    <div class="card-pro p-6 border-b-4 border-cyan-500">
-                        <div class="flex justify-between items-center mb-6">
-                            <span class="text-2xl">${icones[cat]}</span>
-                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${cat}</span>
-                        </div>
-                        <div class="space-y-4">
-                            <div class="flex justify-between items-end">
-                                <div><p class="text-[9px] font-bold text-green-500 uppercase">Eficiência Top</p><p class="text-xl font-bold">#${melhor.apelido}</p></div>
-                                <div class="text-right text-3xl font-brand font-bold text-green-400">${melhor.avg}</div>
-                            </div>
-                            <div class="flex justify-between items-end opacity-40">
-                                <div><p class="text-[9px] font-bold text-red-500 uppercase">Menor Média</p><p class="text-lg font-bold">#${pior.apelido}</p></div>
-                                <div class="text-right text-2xl font-brand font-bold text-red-500">${pior.avg}</div>
-                            </div>
-                        </div>
+                logsCat.forEach(l => { if(!medias[l.viaturas.apelido]) medias[l.viaturas.apelido] = []; medias[l.viaturas.apelido].push(Number(l.media_trecho)); });
+                const ranking = Object.keys(medias).map(ap => ({ ap, avg: (medias[ap].reduce((a,b)=>a+b,0)/medias[ap].length).toFixed(2) })).sort((a,b)=>b.avg-a.avg);
+                const melhor = ranking[0] || { ap: '---', avg: '0.00' };
+                return `<div class="card-pro p-5 border-b-2 border-cyan-500">
+                    <div class="flex justify-between items-center mb-4"><span>${icons[cat]}</span><span class="text-[10px] text-slate-500 font-bold uppercase">${cat}</span></div>
+                    <div class="flex justify-between items-end">
+                        <div><p class="text-[9px] text-green-500 font-bold uppercase">Líder</p><p class="text-xl font-bold">#${melhor.ap}</p></div>
+                        <div class="text-3xl font-brand font-bold text-green-400">${melhor.avg}</div>
                     </div>
-                `;
+                </div>`;
             }).join('');
         }
 
         async function registrarAbastecimento() {
-            const v_id = document.getElementById('selViatura').value;
-            const litros = limparMascaras(document.getElementById('inLitros').value);
-            const km = limparMascaras(document.getElementById('inKM').value);
-            const dataStr = `${document.getElementById('inData').value}T${document.getElementById('inHora').value}`;
-            if(!litros || !km) return alert("Preencha tudo!");
-            
+            const v_id = document.getElementById('selViatura').value, litros = limparMascaras(document.getElementById('inLitros').value), km = limparMascaras(document.getElementById('inKM').value), data = `${document.getElementById('inData').value}T${document.getElementById('inHora').value}`;
             const v = viaturas.find(x => x.id === v_id);
             if(km <= v.ultimo_hodometro) return alert("HODÔMETRO INVÁLIDO!");
-            
-            let media = v.ultimo_hodometro > 0 ? ((km - v.ultimo_hodometro) / litros).toFixed(3) : 0;
-            await supabaseClient.from('abastecimentos').insert([{ viatura_id: v_id, litros, hodometro_atual: km, media_trecho: media, data_hora: dataStr }]);
+            let m = v.ultimo_hodometro > 0 ? ((km - v.ultimo_hodometro) / litros).toFixed(3) : 0;
+            await supabaseClient.from('abastecimentos').insert([{ viatura_id: v_id, litros, hodometro_atual: km, media_trecho: m, data_hora: data }]);
             await supabaseClient.from('viaturas').update({ ultimo_hodometro: km }).eq('id', v_id);
             location.reload();
         }
 
         function gerarDashIndividual() {
-            const id = document.getElementById('selDashViatura').value;
-            const logs = abastecimentos.filter(a => a.viatura_id === id).reverse();
+            const id = document.getElementById('selDashViatura').value, logs = abastecimentos.filter(a => a.viatura_id === id).reverse();
             if(logs.length === 0) return;
-
             const avg = logs.filter(l => l.media_trecho > 0).reduce((a,c) => a+Number(c.media_trecho), 0) / (logs.filter(l => l.media_trecho > 0).length || 1);
             document.getElementById('mediaGeralIndividual').innerText = avg.toFixed(1);
-
             const alerta = document.getElementById('alertaFuro'); alerta.classList.add('hidden');
-            for(let i=1; i < logs.length; i++) {
-                if(logs[i].hodometro_atual - logs[i-1].hodometro_atual > 1500) {
-                    alerta.classList.remove('hidden');
-                    document.getElementById('periodoFuro').innerText = `Entre ${new Date(logs[i-1].data_hora).toLocaleDateString()} e ${new Date(logs[i].data_hora).toLocaleDateString()}`;
-                    break;
-                }
-            }
-
-            document.getElementById('listaHistInd').innerHTML = [...logs].reverse().map(a => `
-                <tr class="hover:bg-slate-800/50">
-                    <td class="p-4 text-slate-400">${new Date(a.data_hora).toLocaleDateString()}</td>
-                    <td class="p-4 font-bold text-white">${a.hodometro_atual.toLocaleString()} KM</td>
-                    <td class="p-4 text-slate-300">${a.litros.toLocaleString()} L</td>
-                    <td class="p-4 font-brand text-lg text-cyan-400">${a.media_trecho}</td>
-                </tr>
-            `).join('');
-
+            for(let i=1; i < logs.length; i++) { if(logs[i].hodometro_atual - logs[i-1].hodometro_atual > 1500) { alerta.classList.remove('hidden'); document.getElementById('periodoFuro').innerText = `Período: ${new Date(logs[i-1].data_hora).toLocaleDateString()} a ${new Date(logs[i].data_hora).toLocaleDateString()}`; break; } }
+            document.getElementById('listaHistInd').innerHTML = [...logs].reverse().map(a => `<tr><td class="p-4 text-slate-500">${new Date(a.data_hora).toLocaleDateString()}</td><td class="p-4 font-bold">${a.hodometro_atual.toLocaleString()} KM</td><td class="p-4">${a.litros.toLocaleString()} L</td><td class="p-4 font-brand text-lg text-cyan-400">${a.media_trecho}</td></tr>`).join('');
             if(chart) chart.destroy();
-            chart = new Chart(document.getElementById('graficoEvolucao'), {
-                type: 'line',
-                data: {
-                    labels: logs.map(l => new Date(l.data_hora).toLocaleDateString()),
-                    datasets: [{ data: logs.map(l => l.media_trecho), borderColor: '#06b6d4', tension: 0.4, borderWeight: 4, pointRadius: 4, fill: true, backgroundColor: 'rgba(6, 182, 212, 0.05)' }]
-                },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } }, x: { grid: { display: false } } } }
-            });
+            chart = new Chart(document.getElementById('graficoEvolucao'), { type: 'line', data: { labels: logs.map(l => new Date(l.data_hora).toLocaleDateString()), datasets: [{ data: logs.map(l => l.media_trecho), borderColor: '#06b6d4', tension: 0.4, fill: true, backgroundColor: 'rgba(6, 182, 212, 0.05)' }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
         }
 
         async function salvarViatura() {
-            const id = document.getElementById('editId').value;
-            const payload = { apelido: document.getElementById('cadApelido').value, placa: document.getElementById('cadPlaca').value.toUpperCase(), modelo: document.getElementById('cadModelo').value, categoria: document.getElementById('cadCategoria').value };
-            if(id) await supabaseClient.from('viaturas').update(payload).eq('id', id);
-            else await supabaseClient.from('viaturas').insert([payload]);
+            const id = document.getElementById('editId').value, p = { apelido: document.getElementById('cadApelido').value, placa: document.getElementById('cadPlaca').value.toUpperCase(), modelo: document.getElementById('cadModelo').value, categoria: document.getElementById('cadCategoria').value };
+            if(id) await supabaseClient.from('viaturas').update(p).eq('id', id); else await supabaseClient.from('viaturas').insert([p]);
             location.reload();
         }
 
         function switchTab(t) {
-            ['lançamento', 'frota', 'dashboard'].forEach(x => {
-                document.getElementById('sec-'+x).classList.add('hidden');
-                document.getElementById('tab-'+x).classList.remove('tab-active');
-            });
-            document.getElementById('sec-' + t).classList.remove('hidden');
-            document.getElementById('tab-' + t).classList.add('tab-active');
+            ['lançamento', 'frota', 'dashboard'].forEach(x => { document.getElementById('sec-'+x).classList.add('hidden'); document.getElementById('tab-'+x).classList.remove('tab-active'); });
+            document.getElementById('sec-' + t).classList.remove('hidden'); document.getElementById('tab-' + t).classList.add('tab-active');
             if(t === 'dashboard') gerarDashIndividual();
         }
 
         function prepararEdicao(id) {
             const v = viaturas.find(x => x.id === id);
-            document.getElementById('editId').value = v.id;
-            document.getElementById('cadApelido').value = v.apelido;
-            document.getElementById('cadPlaca').value = v.placa;
-            document.getElementById('cadModelo').value = v.modelo;
-            document.getElementById('cadCategoria').value = v.categoria;
+            document.getElementById('editId').value = v.id; document.getElementById('cadApelido').value = v.apelido; document.getElementById('cadPlaca').value = v.placa; document.getElementById('cadModelo').value = v.modelo; document.getElementById('cadCategoria').value = v.categoria;
             switchTab('frota');
         }
 
-        async function excluirViatura(id) {
-            if(confirm("Confirmar exclusão?")) {
-                await supabaseClient.from('abastecimentos').delete().eq('viatura_id', id);
-                await supabaseClient.from('viaturas').delete().eq('id', id);
-                location.reload();
-            }
-        }
+        async function excluirViatura(id) { if(confirm("Excluir?")) { await supabaseClient.from('abastecimentos').delete().eq('viatura_id', id); await supabaseClient.from('viaturas').delete().eq('id', id); location.reload(); } }
 
         init();
     </script>

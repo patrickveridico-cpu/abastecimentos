@@ -7,27 +7,18 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root { --accent: #06b6d4; --bg-main: #0f172a; --card-bg: #1e293b; }
         body { background-color: var(--bg-main); color: #f1f5f9; font-family: 'Inter', sans-serif; }
         .font-brand { font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; }
-        
         .card-pro { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.25rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
         .input-pro { background: #0f172a; border: 1px solid #334155; border-radius: 0.75rem; padding: 0.75rem; color: #f1f5f9; width: 100%; transition: all 0.2s; }
-        .input-pro:focus { border-color: var(--accent); outline: none; }
-        
         .tab-btn { padding: 0.5rem 1.25rem; border-radius: 0.5rem; transition: all 0.3s; color: #94a3b8; font-weight: 600; font-size: 0.875rem; }
         .tab-active { background: var(--accent); color: #000; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3); }
-        
         tr.row-pro { background: #1e293b; transition: transform 0.2s; }
         tr.row-pro:hover { transform: scale(1.005); background: #334155; }
         td { padding: 1rem; }
-        td:first-child { border-radius: 0.75rem 0 0 0.75rem; }
-        td:last-child { border-radius: 0 0.75rem 0.75rem 0; }
-
         .badge-cat { background: rgba(6, 182, 212, 0.1); color: var(--accent); padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
         .btn-action { background: var(--accent); color: #000; font-weight: 800; border-radius: 0.75rem; transition: all 0.2s; }
     </style>
@@ -43,7 +34,6 @@
                     <p class="text-[9px] uppercase tracking-widest text-slate-500">Controle de Combustível</p>
                 </div>
             </div>
-            
             <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
                 <button onclick="switchTab('lançamento')" id="tab-lançamento" class="tab-btn tab-active">Lançamentos</button>
                 <button onclick="switchTab('frota')" id="tab-frota" class="tab-btn">Frota</button>
@@ -53,7 +43,6 @@
     </nav>
 
     <main class="max-w-7xl mx-auto px-4 md:px-8">
-
         <section id="sec-lançamento" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
                 <div class="card-pro p-6">
@@ -72,25 +61,21 @@
                     </div>
                 </div>
             </div>
-
             <div class="lg:col-span-8">
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Últimos Abastecimentos</h3>
-                    <div class="flex gap-2">
-                        <input type="text" id="filtroPlacaGeral" oninput="renderTabela()" placeholder="Buscar placa..." class="input-pro py-1 px-3 text-xs w-32">
-                        <button onclick="exportarPDF('all')" class="bg-slate-800 text-xs px-3 rounded-lg border border-slate-700">PDF</button>
-                    </div>
+                    <h3 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Feed de Operações</h3>
+                    <input type="text" id="filtroPlacaGeral" oninput="renderTabela()" placeholder="Buscar placa..." class="input-pro py-1 px-3 text-xs w-32">
                 </div>
                 <div class="overflow-x-auto"><table class="w-full text-sm"><tbody id="listaAbastecimentos"></tbody></table></div>
             </div>
         </section>
 
         <section id="sec-frota" class="hidden">
-            <div class="card-pro p-8 mb-8">
-                <h2 class="text-xl font-bold mb-6">Cadastro de Veículo</h2>
+            <div class="card-pro p-8 mb-8" id="formViatura">
+                <h2 class="text-xl font-bold mb-6" id="tituloFrota">Cadastro de Veículo</h2>
                 <input type="hidden" id="editId">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <input id="cadApelido" type="text" placeholder="ID FROTA (Ex: 116)" class="input-pro font-bold">
+                    <input id="cadApelido" type="text" placeholder="ID FROTA" class="input-pro font-bold">
                     <input id="cadPlaca" type="text" placeholder="PLACA" class="input-pro uppercase">
                     <input id="cadModelo" type="text" placeholder="MODELO/ANO" class="input-pro">
                     <select id="cadCategoria" class="input-pro">
@@ -98,43 +83,28 @@
                         <option value="3/4">🚛 3/4</option>
                         <option value="Caminhão">🚚 CAMINHÃO</option>
                     </select>
-                    <button onclick="salvarViatura()" class="btn-action">SALVAR</button>
+                    <button onclick="salvarViatura()" id="btnSalvarFrota" class="btn-action">SALVAR</button>
                 </div>
+                <button onclick="cancelarEdicao()" id="btnCancelar" class="hidden text-xs text-red-400 mt-4 underline">Cancelar Edição</button>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="gridViaturas"></div>
         </section>
 
         <section id="sec-dashboard" class="hidden space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="rankingsCategoria"></div>
-
             <div class="card-pro p-8">
-                <div class="flex flex-col md:flex-row justify-between mb-8 gap-4">
-                    <select id="selDashViatura" onchange="gerarDashIndividual()" class="input-pro w-64"></select>
-                    <div id="alertaFuro" class="hidden bg-red-500/10 border border-red-500/30 p-3 rounded-xl">
-                        <p class="text-red-500 text-[10px] font-black uppercase">Furo de Hodômetro Detectado!</p>
-                        <p id="periodoFuro" class="text-white text-[10px]"></p>
-                    </div>
-                </div>
+                <select id="selDashViatura" onchange="gerarDashIndividual()" class="input-pro w-64 mb-6"></select>
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div class="lg:col-span-2 h-[350px]"><canvas id="graficoEvolucao"></canvas></div>
                     <div class="flex flex-col items-center justify-center p-6 bg-slate-900/50 rounded-2xl border border-slate-800">
                         <span class="text-xs text-slate-500 uppercase">Média Geral</span>
                         <div id="mediaGeralIndividual" class="text-7xl font-brand font-bold text-cyan-400">0.0</div>
+                        <div id="alertaFuro" class="hidden mt-4 text-center text-red-500 text-[10px] font-bold uppercase p-2 border border-red-900/30 rounded bg-red-900/10">Furo Detectado! <p id="periodoFuro" class="text-white normal-case font-normal"></p></div>
                     </div>
-                </div>
-                <div class="mt-10 overflow-x-auto">
-                    <table class="w-full text-[11px] text-left">
-                        <thead class="bg-slate-800"><tr><th class="p-4">DATA</th><th class="p-4">KM</th><th class="p-4">LITROS</th><th class="p-4">MÉDIA</th></tr></thead>
-                        <tbody id="listaHistInd" class="divide-y divide-slate-800 bg-slate-900/20"></tbody>
-                    </table>
                 </div>
             </div>
         </section>
     </main>
-
-    <footer class="text-center mt-20 opacity-30 text-[10px] font-brand uppercase tracking-widest">
-        Dev. Patrick Almeida // Resgate 116
-    </footer>
 
     <script>
         const _URL = "https://olldeytolxdzxxvciyon.supabase.co";
@@ -142,22 +112,9 @@
         const supabaseClient = supabase.createClient(_URL, _KEY);
         let viaturas = [], abastecimentos = [], chart = null;
 
-        function mascaraKM(i) {
-            let v = i.value.replace(/\D/g, "");
-            v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-            i.value = v;
-        }
-
-        function mascaraDecimal(i) {
-            let v = i.value.replace(/\D/g, "");
-            v = (Number(v) / 1000).toFixed(3).replace(".", ",");
-            v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1.");
-            i.value = v;
-        }
-
-        function limparMascaras(v) {
-            return parseFloat(v.replace(/\./g, "").replace(",", "."));
-        }
+        function mascaraKM(i) { let v = i.value.replace(/\D/g, ""); v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); i.value = v; }
+        function mascaraDecimal(i) { let v = i.value.replace(/\D/g, ""); v = (Number(v) / 1000).toFixed(3).replace(".", ","); v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); i.value = v; }
+        function limparMascaras(v) { return parseFloat(v.replace(/\./g, "").replace(",", ".")); }
 
         async function init() {
             const agora = new Date();
@@ -171,7 +128,6 @@
             viaturas = v || [];
             const { data: a } = await supabaseClient.from('abastecimentos').select('*, viaturas(*)').order('data_hora', { ascending: false });
             abastecimentos = a || [];
-
             const opts = viaturas.map(x => `<option value="${x.id}">#${x.apelido} - ${x.placa}</option>`).join('');
             document.getElementById('selViatura').innerHTML = opts;
             document.getElementById('selDashViatura').innerHTML = opts;
@@ -181,51 +137,62 @@
         function renderTabela() {
             const f = document.getElementById('filtroPlacaGeral').value.toUpperCase();
             const filtrados = abastecimentos.filter(a => a.viaturas.placa.includes(f) || a.viaturas.apelido.includes(f));
-            document.getElementById('listaAbastecimentos').innerHTML = filtrados.map(a => `
-                <tr class="row-pro">
-                    <td class="text-[10px] text-slate-500 font-bold">${new Date(a.data_hora).toLocaleDateString()}</td>
-                    <td><div class="flex items-center gap-2">
-                        <span class="text-xs font-black bg-cyan-500 text-black px-1.5 rounded">#${a.viaturas.apelido}</span>
-                        <span class="text-[11px] font-bold text-slate-300">${a.viaturas.placa}</span>
-                    </div></td>
-                    <td class="text-[12px] font-bold">${a.hodometro_atual.toLocaleString()} <span class="text-[9px] text-slate-500">KM</span></td>
-                    <td class="text-[12px] font-bold">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits:3})} <span class="text-[9px] text-slate-500">L</span></td>
-                    <td class="text-right font-brand text-lg ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</td>
-                </tr>
-            `).join('');
+            document.getElementById('listaAbastecimentos').innerHTML = filtrados.map(a => `<tr class="row-pro"><td class="text-[10px] text-slate-500 font-bold">${new Date(a.data_hora).toLocaleDateString()}</td><td><div class="flex items-center gap-2"><span class="text-xs font-black bg-cyan-500 text-black px-1.5 rounded">#${a.viaturas.apelido}</span><span class="text-[11px] font-bold text-slate-300">${a.viaturas.placa}</span></div></td><td class="text-[12px] font-bold">${a.hodometro_atual.toLocaleString()} <span class="text-[9px] text-slate-500">KM</span></td><td class="text-[12px] font-bold">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits:3})} <span class="text-[9px] text-slate-500">L</span></td><td class="text-right font-brand text-lg ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</td></tr>`).join('');
         }
 
         function renderFrota() {
-            document.getElementById('gridViaturas').innerHTML = viaturas.map(v => `
-                <div class="card-pro p-6 flex flex-col items-center">
-                    <div class="badge-cat mb-3">${v.categoria || 'Carro'}</div>
-                    <div class="text-3xl font-brand font-bold text-white">#${v.apelido}</div>
-                    <div class="text-[10px] text-cyan-500 font-black mb-4">${v.placa}</div>
-                    <div class="flex gap-4 w-full pt-4 border-t border-slate-800">
-                        <button onclick="prepararEdicao('${v.id}')" class="text-[10px] font-bold uppercase hover:text-cyan-400 flex-1">Editar</button>
-                        <button onclick="excluirViatura('${v.id}')" class="text-[10px] font-bold uppercase hover:text-red-500 flex-1">Excluir</button>
-                    </div>
-                </div>
-            `).join('');
+            document.getElementById('gridViaturas').innerHTML = viaturas.map(v => `<div class="card-pro p-6 flex flex-col items-center"><div class="badge-cat mb-3">${v.categoria || 'Carro'}</div><div class="text-3xl font-brand font-bold text-white">#${v.apelido}</div><div class="text-[10px] text-cyan-500 font-black mb-4">${v.placa}</div><div class="flex gap-4 w-full pt-4 border-t border-slate-800"><button onclick="prepararEdicao('${v.id}')" class="text-[10px] font-bold uppercase hover:text-cyan-400 flex-1">Editar</button><button onclick="excluirViatura('${v.id}')" class="text-[10px] font-bold uppercase hover:text-red-500 flex-1">Excluir</button></div></div>`).join('');
         }
 
         function renderRankings() {
             const cats = ['Carro', '3/4', 'Caminhão'];
-            const icons = { 'Carro': '🚗', '3/4': '🚛', 'Caminhão': '🚚' };
             document.getElementById('rankingsCategoria').innerHTML = cats.map(cat => {
                 const logsCat = abastecimentos.filter(a => a.viaturas.categoria === cat && a.media_trecho > 0);
                 const medias = {};
                 logsCat.forEach(l => { if(!medias[l.viaturas.apelido]) medias[l.viaturas.apelido] = []; medias[l.viaturas.apelido].push(Number(l.media_trecho)); });
                 const ranking = Object.keys(medias).map(ap => ({ ap, avg: (medias[ap].reduce((a,b)=>a+b,0)/medias[ap].length).toFixed(2) })).sort((a,b)=>b.avg-a.avg);
                 const melhor = ranking[0] || { ap: '---', avg: '0.00' };
-                return `<div class="card-pro p-5 border-b-2 border-cyan-500">
-                    <div class="flex justify-between items-center mb-4"><span>${icons[cat]}</span><span class="text-[10px] text-slate-500 font-bold uppercase">${cat}</span></div>
-                    <div class="flex justify-between items-end">
-                        <div><p class="text-[9px] text-green-500 font-bold uppercase">Líder</p><p class="text-xl font-bold">#${melhor.ap}</p></div>
-                        <div class="text-3xl font-brand font-bold text-green-400">${melhor.avg}</div>
-                    </div>
-                </div>`;
+                return `<div class="card-pro p-5 border-b-2 border-cyan-500"><p class="text-[10px] text-slate-500 font-bold uppercase mb-4">${cat}</p><div class="flex justify-between items-end"><div><p class="text-[9px] text-green-500 font-bold uppercase">Líder</p><p class="text-xl font-bold">#${melhor.ap}</p></div><div class="text-3xl font-brand font-bold text-green-400">${melhor.avg}</div></div></div>`;
             }).join('');
+        }
+
+        function prepararEdicao(id) {
+            const v = viaturas.find(x => x.id === id);
+            document.getElementById('editId').value = v.id;
+            document.getElementById('cadApelido').value = v.apelido;
+            document.getElementById('cadPlaca').value = v.placa;
+            document.getElementById('cadModelo').value = v.modelo;
+            document.getElementById('cadCategoria').value = v.categoria || 'Carro';
+            
+            document.getElementById('tituloFrota').innerText = "Editando Viatura #" + v.apelido;
+            document.getElementById('btnSalvarFrota').innerText = "ATUALIZAR";
+            document.getElementById('btnCancelar').classList.remove('hidden');
+            document.getElementById('formViatura').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelarEdicao() {
+            document.getElementById('editId').value = "";
+            document.getElementById('cadApelido').value = "";
+            document.getElementById('cadPlaca').value = "";
+            document.getElementById('cadModelo').value = "";
+            document.getElementById('tituloFrota').innerText = "Cadastro de Veículo";
+            document.getElementById('btnSalvarFrota').innerText = "SALVAR";
+            document.getElementById('btnCancelar').classList.add('hidden');
+        }
+
+        async function salvarViatura() {
+            const id = document.getElementById('editId').value;
+            const payload = { 
+                apelido: document.getElementById('cadApelido').value, 
+                placa: document.getElementById('cadPlaca').value.toUpperCase(), 
+                modelo: document.getElementById('cadModelo').value, 
+                categoria: document.getElementById('cadCategoria').value 
+            };
+            
+            if(id) await supabaseClient.from('viaturas').update(payload).eq('id', id);
+            else await supabaseClient.from('viaturas').insert([payload]);
+            
+            location.reload();
         }
 
         async function registrarAbastecimento() {
@@ -244,28 +211,15 @@
             const avg = logs.filter(l => l.media_trecho > 0).reduce((a,c) => a+Number(c.media_trecho), 0) / (logs.filter(l => l.media_trecho > 0).length || 1);
             document.getElementById('mediaGeralIndividual').innerText = avg.toFixed(1);
             const alerta = document.getElementById('alertaFuro'); alerta.classList.add('hidden');
-            for(let i=1; i < logs.length; i++) { if(logs[i].hodometro_atual - logs[i-1].hodometro_atual > 1500) { alerta.classList.remove('hidden'); document.getElementById('periodoFuro').innerText = `Período: ${new Date(logs[i-1].data_hora).toLocaleDateString()} a ${new Date(logs[i].data_hora).toLocaleDateString()}`; break; } }
-            document.getElementById('listaHistInd').innerHTML = [...logs].reverse().map(a => `<tr><td class="p-4 text-slate-500">${new Date(a.data_hora).toLocaleDateString()}</td><td class="p-4 font-bold">${a.hodometro_atual.toLocaleString()} KM</td><td class="p-4">${a.litros.toLocaleString()} L</td><td class="p-4 font-brand text-lg text-cyan-400">${a.media_trecho}</td></tr>`).join('');
+            for(let i=1; i < logs.length; i++) { if(logs[i].hodometro_atual - logs[i-1].hodometro_atual > 1500) { alerta.classList.remove('hidden'); document.getElementById('periodoFuro').innerText = `${new Date(logs[i-1].data_hora).toLocaleDateString()} e ${new Date(logs[i].data_hora).toLocaleDateString()}`; break; } }
             if(chart) chart.destroy();
             chart = new Chart(document.getElementById('graficoEvolucao'), { type: 'line', data: { labels: logs.map(l => new Date(l.data_hora).toLocaleDateString()), datasets: [{ data: logs.map(l => l.media_trecho), borderColor: '#06b6d4', tension: 0.4, fill: true, backgroundColor: 'rgba(6, 182, 212, 0.05)' }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-        }
-
-        async function salvarViatura() {
-            const id = document.getElementById('editId').value, p = { apelido: document.getElementById('cadApelido').value, placa: document.getElementById('cadPlaca').value.toUpperCase(), modelo: document.getElementById('cadModelo').value, categoria: document.getElementById('cadCategoria').value };
-            if(id) await supabaseClient.from('viaturas').update(p).eq('id', id); else await supabaseClient.from('viaturas').insert([p]);
-            location.reload();
         }
 
         function switchTab(t) {
             ['lançamento', 'frota', 'dashboard'].forEach(x => { document.getElementById('sec-'+x).classList.add('hidden'); document.getElementById('tab-'+x).classList.remove('tab-active'); });
             document.getElementById('sec-' + t).classList.remove('hidden'); document.getElementById('tab-' + t).classList.add('tab-active');
             if(t === 'dashboard') gerarDashIndividual();
-        }
-
-        function prepararEdicao(id) {
-            const v = viaturas.find(x => x.id === id);
-            document.getElementById('editId').value = v.id; document.getElementById('cadApelido').value = v.apelido; document.getElementById('cadPlaca').value = v.placa; document.getElementById('cadModelo').value = v.modelo; document.getElementById('cadCategoria').value = v.categoria;
-            switchTab('frota');
         }
 
         async function excluirViatura(id) { if(confirm("Excluir?")) { await supabaseClient.from('abastecimentos').delete().eq('viatura_id', id); await supabaseClient.from('viaturas').delete().eq('id', id); location.reload(); } }

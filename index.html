@@ -3,138 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FUEL_INTEL V2.1 // RESGATE 116</title>
+    <title>FUEL_CONTROL // RESGATE 116</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@300;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
     <style>
-        :root { --neon: #00f2ff; --bg: #020617; }
-        body { background: var(--bg); color: #e2e8f0; font-family: 'JetBrains Mono', monospace; }
-        .font-header { font-family: 'Orbitron', sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(15px); border: 1px solid rgba(0, 242, 255, 0.1); }
-        .tab-active { border-bottom: 3px solid var(--neon); color: var(--neon); text-shadow: 0 0 10px var(--neon); }
-        input, select { background: #0f172a !important; border: 1px solid #1e293b !important; color: white !important; font-size: 13px !important; }
-        .badge-cat { font-size: 9px; padding: 2px 6px; border-radius: 4px; background: #1e293b; color: var(--neon); border: 1px solid var(--neon); }
+        :root { --accent: #06b6d4; --bg-main: #0f172a; --card-bg: #1e293b; }
+        body { background-color: var(--bg-main); color: #f1f5f9; font-family: 'Inter', sans-serif; }
+        .font-brand { font-family: 'Rajdhani', sans-serif; letter-spacing: 1px; }
+        
+        /* Layout Clean */
+        .card-pro { background: var(--card-bg); border: 1px solid rgba(255,255,255,0.05); border-radius: 1.25rem; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); }
+        .input-pro { background: #0f172a; border: 1px solid #334155; border-radius: 0.75rem; padding: 0.75rem; color: #f1f5f9; width: 100%; transition: all 0.2s; }
+        .input-pro:focus { border-color: var(--accent); outline: none; ring: 2px solid rgba(6, 182, 212, 0.2); }
+        
+        /* Tabs Estilo Apple */
+        .tab-btn { padding: 0.5rem 1.25rem; border-radius: 0.5rem; transition: all 0.3s; color: #94a3b8; font-weight: 600; font-size: 0.875rem; }
+        .tab-active { background: var(--accent); color: #000; box-shadow: 0 4px 12px rgba(6, 182, 212, 0.3); }
+        
+        /* Tabela Profissional */
+        table { border-collapse: separate; border-spacing: 0 8px; }
+        tr.row-pro { background: #1e293b; transition: transform 0.2s; }
+        tr.row-pro:hover { transform: scale(1.01); background: #334155; }
+        td { padding: 1rem; }
+        td:first-child { border-radius: 0.75rem 0 0 0.75rem; }
+        td:last-child { border-radius: 0 0.75rem 0.75rem 0; }
+
+        .badge-cat { background: rgba(6, 182, 212, 0.1); color: var(--accent); padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 700; text-transform: uppercase; }
+        .btn-action { background: var(--accent); color: #000; font-weight: 800; border-radius: 0.75rem; transition: all 0.2s; }
+        .btn-action:hover { opacity: 0.9; transform: translateY(-1px); }
     </style>
 </head>
-<body class="p-4 md:p-8" onload="init()">
+<body class="min-h-screen pb-12">
 
-    <div class="max-w-7xl mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-8 border-b border-cyan-900/30 pb-6">
-            <div class="flex items-center gap-4">
-                <img src="RESGATE NOVA SEM FUNDO.jpg" alt="Logo" class="h-16 w-16 object-contain">
+    <nav class="sticky top-0 z-50 bg-[#0f172a/80] backdrop-blur-md border-b border-slate-800 mb-8 px-4 md:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <img src="RESGATE NOVA SEM FUNDO.jpg" alt="Logo" class="h-12 w-12 object-contain">
                 <div>
-                    <h1 class="font-header text-2xl font-black text-cyan-400 italic">RESGATE_116 // V2.1</h1>
-                    <p class="text-[10px] tracking-[0.3em] text-slate-500 uppercase mt-1">Dev. Patrick Almeida</p>
+                    <h1 class="font-brand text-2xl font-bold leading-none text-white">RESGATE 116 <span class="text-cyan-500 text-sm">PRO</span></h1>
+                    <p class="text-[9px] uppercase tracking-widest text-slate-500">Gestão de Combustível v3.0</p>
                 </div>
             </div>
-            <nav class="flex gap-6 mt-6 md:mt-0 font-header text-[10px]">
-                <button onclick="switchTab('lançamento')" id="tab-lançamento" class="tab-active py-2">LANÇAMENTO</button>
-                <button onclick="switchTab('frota')" id="tab-frota" class="text-slate-500 py-2">FROTA</button>
-                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="text-slate-500 py-2">DASHBOARD</button>
-            </nav>
-        </header>
+            
+            <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+                <button onclick="switchTab('lançamento')" id="tab-lançamento" class="tab-btn tab-active">Lançamentos</button>
+                <button onclick="switchTab('frota')" id="tab-frota" class="tab-btn">Minha Frota</button>
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn">Dashboard</button>
+            </div>
+        </div>
+    </nav>
 
-        <section id="sec-lançamento" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div class="glass p-6 rounded-3xl h-fit border-t-4 border-t-cyan-500">
-                <h2 class="font-header text-sm mb-6 text-cyan-300 italic">REGISTRAR ABASTECIMENTO</h2>
-                <div class="space-y-4">
-                    <select id="selViatura" class="w-full p-4 rounded-xl"></select>
-                    <div class="grid grid-cols-2 gap-3">
-                        <input id="inData" type="date" class="w-full p-3 rounded-xl">
-                        <input id="inHora" type="time" step="1" class="w-full p-3 rounded-xl">
+    <main class="max-w-7xl mx-auto px-4 md:px-8">
+
+        <section id="sec-lançamento" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <div class="lg:col-span-4 space-y-6">
+                <div class="card-pro p-6">
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+                        <span class="w-1.5 h-6 bg-cyan-500 rounded-full"></span> 
+                        Registrar Abastecimento
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-400 ml-1">Viatura / Unidade</label>
+                            <select id="selViatura" class="input-pro"></select>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400 ml-1">Data</label>
+                                <input id="inData" type="date" class="input-pro text-sm">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400 ml-1">Horário</label>
+                                <input id="inHora" type="time" step="1" class="input-pro text-sm">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400 ml-1">Litros</label>
+                                <input id="inLitros" type="text" oninput="mascaraDecimal(this)" class="input-pro text-cyan-400 font-bold" placeholder="0,000">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-400 ml-1">Hodômetro</label>
+                                <input id="inKM" type="text" oninput="mascaraKM(this)" class="input-pro font-bold" placeholder="000.000">
+                            </div>
+                        </div>
+                        <button onclick="registrarAbastecimento()" class="btn-action w-full py-4 mt-4 text-sm uppercase">Salvar Registro</button>
                     </div>
-                    <div class="grid grid-cols-2 gap-3">
-                        <input id="inLitros" type="text" oninput="mascaraDecimal(this)" class="w-full p-4 rounded-xl font-bold text-cyan-400" placeholder="Litros (0,000)">
-                        <input id="inKM" type="text" oninput="mascaraKM(this)" class="w-full p-4 rounded-xl font-bold" placeholder="KM (000.000)">
-                    </div>
-                    <button onclick="registrarAbastecimento()" class="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white rounded-2xl font-header font-bold shadow-lg">SALVAR</button>
                 </div>
             </div>
 
-            <div class="lg:col-span-2 glass rounded-3xl overflow-hidden flex flex-col">
-                <div class="p-4 bg-slate-900/50 border-b border-slate-800 flex flex-wrap gap-3 items-center">
-                    <span class="font-header text-[10px] text-cyan-500 mr-auto">HISTÓRICO GLOBAL</span>
-                    <input type="date" id="filtroDataGeral" onchange="renderTabela()" class="p-2 rounded text-[10px]">
-                    <input type="text" id="filtroPlacaGeral" oninput="renderTabela()" placeholder="Placa/Frota" class="p-2 rounded text-[10px] w-24">
+            <div class="lg:col-span-8">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Feed de Operações</h3>
+                    <div class="flex gap-2">
+                        <input type="text" id="filtroPlacaGeral" oninput="renderTabela()" placeholder="Buscar placa..." class="input-pro py-1 px-3 text-xs w-32">
+                        <button onclick="exportarPDF('all')" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 rounded-lg border border-slate-700">PDF</button>
+                    </div>
                 </div>
-                <div class="overflow-x-auto max-h-[500px]">
-                    <table class="w-full text-[11px] text-left">
-                        <thead class="bg-slate-950 text-slate-600 sticky top-0">
-                            <tr><th class="p-4">DATA/HORA</th><th class="p-4">FROTA</th><th class="p-4">KM</th><th class="p-4">LITROS</th><th class="p-4">MÉDIA</th></tr>
-                        </thead>
-                        <tbody id="listaAbastecimentos" class="divide-y divide-slate-800"></tbody>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <tbody id="listaAbastecimentos"></tbody>
                     </table>
                 </div>
             </div>
         </section>
 
-        <section id="sec-frota" class="hidden">
-            <div class="glass p-8 rounded-3xl mb-8">
-                <h2 class="font-header text-sm mb-6 text-cyan-400">CONFIGURAÇÃO DE VIATURA</h2>
+        <section id="sec-frota" class="hidden animate-fadeIn">
+            <div class="card-pro p-8 mb-8">
+                <h2 class="text-xl font-bold mb-6 text-white">Gerenciar Veículos</h2>
                 <input type="hidden" id="editId">
                 <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-                    <input id="cadApelido" type="text" placeholder="Nº FROTA" class="p-4 rounded-xl font-black text-center">
-                    <input id="cadPlaca" type="text" placeholder="PLACA" class="p-4 rounded-xl uppercase">
-                    <input id="cadModelo" type="text" placeholder="MODELO" class="p-4 rounded-xl">
-                    <select id="cadCategoria" class="p-4 rounded-xl">
-                        <option value="Carro">CARRO</option>
-                        <option value="3/4">3/4</option>
-                        <option value="Caminhão">CAMINHÃO</option>
+                    <input id="cadApelido" type="text" placeholder="ID FROTA" class="input-pro font-black">
+                    <input id="cadPlaca" type="text" placeholder="PLACA" class="input-pro uppercase">
+                    <input id="cadModelo" type="text" placeholder="MODELO" class="input-pro">
+                    <select id="cadCategoria" class="input-pro">
+                        <option value="Carro">🚗 CARRO</option>
+                        <option value="3/4">🚛 3/4</option>
+                        <option value="Caminhão">🚚 CAMINHÃO</option>
                     </select>
-                    <button onclick="salvarViatura()" class="bg-cyan-600 font-bold rounded-xl text-[10px]">SALVAR</button>
+                    <button onclick="salvarViatura()" class="btn-action py-3">CADASTRAR</button>
                 </div>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4" id="gridViaturas"></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6" id="gridViaturas"></div>
         </section>
 
-        <section id="sec-dashboard" class="hidden space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="rankingsCategoria"></div>
+        <section id="sec-dashboard" class="hidden space-y-8 animate-fadeIn">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="rankingsCategoria"></div>
 
-            <div class="glass p-6 rounded-3xl">
-                <div class="flex flex-col md:flex-row gap-4 justify-between mb-6">
-                    <select id="selDashViatura" onchange="gerarDashIndividual()" class="p-3 rounded-xl bg-slate-900 text-cyan-400 font-bold border border-cyan-900 w-full md:w-64"></select>
-                    <div class="flex gap-2">
-                        <input type="date" id="filtroDataInd" onchange="renderHistoricoInd()" class="p-2 rounded text-xs bg-slate-800">
-                        <button onclick="exportarPDFIndividual()" class="bg-red-900 text-white px-4 py-2 rounded-xl text-[10px] font-bold">PDF</button>
+            <div class="card-pro p-8">
+                <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">Análise de Performance</h2>
+                        <p class="text-sm text-slate-500">Selecione uma unidade para ver o raio-x completo</p>
+                    </div>
+                    <div class="flex gap-3">
+                        <select id="selDashViatura" onchange="gerarDashIndividual()" class="input-pro w-64 border-cyan-900/50"></select>
                     </div>
                 </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="lg:col-span-2 h-[350px]">
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div class="lg:col-span-3 h-[400px]">
                         <canvas id="graficoEvolucao"></canvas>
                     </div>
-                    <div class="flex flex-col justify-center items-center p-6 border-l border-slate-800">
-                        <span class="text-[10px] text-slate-500 uppercase">Média Geral</span>
-                        <div id="mediaGeralIndividual" class="text-6xl font-header text-cyan-400">--</div>
-                        <div id="alertaFuro" class="mt-4 p-3 bg-red-900/20 rounded-lg hidden">
-                            <p class="text-red-500 text-[10px] font-bold">⚠️ FURO DETECTADO!</p>
-                            <p id="periodoFuro" class="text-white text-[9px] mt-1"></p>
+                    <div class="flex flex-col items-center justify-center p-6 bg-slate-900/50 rounded-3xl border border-slate-800">
+                        <span class="text-xs font-bold text-slate-500 uppercase mb-2">Média Vitalícia</span>
+                        <div id="mediaGeralIndividual" class="text-7xl font-brand font-bold text-cyan-400">0.0</div>
+                        <div id="alertaFuro" class="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl hidden text-center">
+                            <p class="text-red-500 text-[10px] font-black uppercase">Furo no Hodômetro</p>
+                            <p id="periodoFuro" class="text-white text-[10px] mt-1"></p>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-8 overflow-x-auto">
-                    <h4 class="text-[10px] font-header text-slate-500 mb-4 uppercase">Histórico da Unidade</h4>
-                    <table class="w-full text-[10px] text-left">
-                        <thead class="bg-slate-900">
-                            <tr><th class="p-3">DATA</th><th class="p-3">HODÔMETRO</th><th class="p-3">LITROS</th><th class="p-3">MÉDIA</th></tr>
-                        </thead>
-                        <tbody id="listaHistInd" class="divide-y divide-slate-800"></tbody>
-                    </table>
+                <div class="mt-12">
+                    <h3 class="text-xs font-bold text-slate-500 uppercase mb-4 tracking-widest">Extrato de Abastecimentos</h3>
+                    <div class="overflow-hidden rounded-2xl border border-slate-800">
+                        <table class="w-full text-xs text-left">
+                            <thead class="bg-slate-800 text-slate-400">
+                                <tr><th class="p-4">DATA</th><th class="p-4">HODÔMETRO</th><th class="p-4">LITROS</th><th class="p-4">MÉDIA</th></tr>
+                            </thead>
+                            <tbody id="listaHistInd" class="divide-y divide-slate-800 bg-slate-900/30"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </section>
-    </div>
+
+    </main>
+
+    <footer class="text-center mt-20 opacity-30 text-[10px] font-brand uppercase tracking-widest">
+        Sistema Desenvolvido por <span class="text-cyan-500">Patrick Almeida</span> // Resgate 116
+    </footer>
 
     <script>
+        // CORE LOGIC (MANTIDA DA V2.1 PARA FUNCIONAR O BANCO)
         const _URL = "https://olldeytolxdzxxvciyon.supabase.co";
         const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sbGRleXRvbHhkenh4dmNpeW9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODM2MDUsImV4cCI6MjA5MTE1OTYwNX0.r3LxebF13PYt-boPFqPUsZ03y5CSD4-6iSUEE_huhXE";
         const supabaseClient = supabase.createClient(_URL, _KEY);
-        
         let viaturas = [];
         let abastecimentos = [];
         let chart = null;
@@ -169,9 +218,9 @@
             const { data: a } = await supabaseClient.from('abastecimentos').select('*, viaturas(*)').order('data_hora', { ascending: false });
             abastecimentos = a || [];
 
-            const options = viaturas.map(x => `<option value="${x.id}">${x.apelido} - ${x.placa}</option>`).join('');
-            document.getElementById('selViatura').innerHTML = options;
-            document.getElementById('selDashViatura').innerHTML = options;
+            const opts = viaturas.map(x => `<option value="${x.id}">#${x.apelido} - ${x.placa}</option>`).join('');
+            document.getElementById('selViatura').innerHTML = opts;
+            document.getElementById('selDashViatura').innerHTML = opts;
             
             renderTabela();
             renderFrota();
@@ -179,50 +228,41 @@
         }
 
         function renderTabela() {
-            const filtroData = document.getElementById('filtroDataGeral').value;
             const filtroPlaca = document.getElementById('filtroPlacaGeral').value.toUpperCase();
-            
-            const filtrados = abastecimentos.filter(a => {
-                const dataMatch = filtroData ? a.data_hora.startsWith(filtroData) : true;
-                const placaMatch = a.viaturas.placa.includes(filtroPlaca) || a.viaturas.apelido.includes(filtroPlaca);
-                return dataMatch && placaMatch;
-            });
+            const filtrados = abastecimentos.filter(a => a.viaturas.placa.includes(filtroPlaca) || a.viaturas.apelido.includes(filtroPlaca));
 
             document.getElementById('listaAbastecimentos').innerHTML = filtrados.map(a => `
-                <tr class="hover:bg-white/5">
-                    <td class="p-4 text-slate-500">${new Date(a.data_hora).toLocaleString('pt-BR')}</td>
-                    <td class="p-4 font-bold text-cyan-400">#${a.viaturas.apelido}</td>
-                    <td class="p-4">${a.hodometro_atual.toLocaleString('pt-BR')}</td>
-                    <td class="p-4">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits: 3})}L</td>
-                    <td class="p-4 font-bold ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</td>
+                <tr class="row-pro">
+                    <td>
+                        <div class="text-[10px] text-slate-500 font-bold">${new Date(a.data_hora).toLocaleDateString()}</div>
+                        <div class="text-[10px] text-slate-600">${new Date(a.data_hora).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black bg-cyan-500 text-black px-1.5 rounded">#${a.viaturas.apelido}</span>
+                            <span class="text-[11px] font-bold text-slate-300">${a.viaturas.placa}</span>
+                        </div>
+                    </td>
+                    <td class="text-[12px] font-bold">${a.hodometro_atual.toLocaleString('pt-BR')} <span class="text-[9px] text-slate-500">KM</span></td>
+                    <td class="text-[12px] font-bold">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits: 3})} <span class="text-[9px] text-slate-500">L</span></td>
+                    <td class="text-right">
+                        <span class="font-brand text-lg ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</span>
+                        <span class="text-[9px] text-slate-600 ml-1">km/l</span>
+                    </td>
                 </tr>
             `).join('');
         }
 
-        async function salvarViatura() {
-            const id = document.getElementById('editId').value;
-            const payload = { 
-                apelido: document.getElementById('cadApelido').value,
-                placa: document.getElementById('cadPlaca').value.toUpperCase(),
-                modelo: document.getElementById('cadModelo').value,
-                categoria: document.getElementById('cadCategoria').value
-            };
-            if(id) await supabaseClient.from('viaturas').update(payload).eq('id', id);
-            else await supabaseClient.from('viaturas').insert([payload]);
-            location.reload();
-        }
-
         function renderFrota() {
             document.getElementById('gridViaturas').innerHTML = viaturas.map(v => `
-                <div class="glass p-5 rounded-2xl border-b-2 border-cyan-800">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="bg-cyan-500 text-black font-black px-2 py-1 rounded text-xs">${v.apelido}</span>
-                        <span class="badge-cat">${v.categoria || 'N/A'}</span>
-                    </div>
-                    <p class="text-[10px] font-bold text-slate-400 uppercase truncate">${v.modelo}</p>
-                    <div class="flex gap-3 mt-4">
-                        <button onclick="prepararEdicao('${v.id}')" class="text-[9px] text-cyan-400 uppercase">Editar</button>
-                        <button onclick="excluirViatura('${v.id}')" class="text-[9px] text-red-500 uppercase">Excluir</button>
+                <div class="card-pro p-6 flex flex-col items-center text-center group">
+                    <div class="badge-cat mb-3">${v.categoria || 'N/A'}</div>
+                    <div class="text-3xl font-brand font-bold text-white mb-1">#${v.apelido}</div>
+                    <div class="text-[10px] font-black text-cyan-500 tracking-widest mb-4">${v.placa}</div>
+                    <div class="text-[11px] text-slate-400 mb-6 h-8 line-clamp-2">${v.modelo}</div>
+                    <div class="flex gap-4 w-full pt-4 border-t border-slate-800">
+                        <button onclick="prepararEdicao('${v.id}')" class="text-[10px] font-bold uppercase text-slate-400 hover:text-cyan-400 flex-1">Editar</button>
+                        <button onclick="excluirViatura('${v.id}')" class="text-[10px] font-bold uppercase text-slate-400 hover:text-red-500 flex-1">Excluir</button>
                     </div>
                 </div>
             `).join('');
@@ -230,9 +270,9 @@
 
         function renderRankings() {
             const categorias = ['Carro', '3/4', 'Caminhão'];
-            const container = document.getElementById('rankingsCategoria');
+            const icones = { 'Carro': '🚗', '3/4': '🚛', 'Caminhão': '🚚' };
             
-            container.innerHTML = categorias.map(cat => {
+            document.getElementById('rankingsCategoria').innerHTML = categorias.map(cat => {
                 const logsCat = abastecimentos.filter(a => a.viaturas.categoria === cat && a.media_trecho > 0);
                 const medias = {};
                 logsCat.forEach(l => {
@@ -249,15 +289,20 @@
                 const pior = ranking.length > 1 ? ranking[ranking.length - 1] : { apelido: '---', avg: '0.00' };
 
                 return `
-                    <div class="glass p-4 rounded-2xl border-t-2 border-cyan-500">
-                        <h3 class="text-[10px] font-header text-slate-500 uppercase mb-3">${cat}</h3>
-                        <div class="flex justify-between items-center">
-                            <div><p class="text-[9px] text-green-500">MELHOR</p><p class="font-bold text-white">#${melhor.apelido}</p></div>
-                            <div class="text-right"><p class="text-2xl font-header text-green-400">${melhor.avg}</p></div>
+                    <div class="card-pro p-6 border-b-4 border-cyan-500">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-2xl">${icones[cat]}</span>
+                            <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">${cat}</span>
                         </div>
-                        <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-800">
-                            <div><p class="text-[9px] text-red-500">PIOR</p><p class="font-bold text-slate-500">#${pior.apelido}</p></div>
-                            <div class="text-right"><p class="text-lg font-header text-red-900">${pior.avg}</p></div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-end">
+                                <div><p class="text-[9px] font-bold text-green-500 uppercase">Eficiência Top</p><p class="text-xl font-bold">#${melhor.apelido}</p></div>
+                                <div class="text-right text-3xl font-brand font-bold text-green-400">${melhor.avg}</div>
+                            </div>
+                            <div class="flex justify-between items-end opacity-40">
+                                <div><p class="text-[9px] font-bold text-red-500 uppercase">Menor Média</p><p class="text-lg font-bold">#${pior.apelido}</p></div>
+                                <div class="text-right text-2xl font-brand font-bold text-red-500">${pior.avg}</div>
+                            </div>
                         </div>
                     </div>
                 `;
@@ -269,8 +314,11 @@
             const litros = limparMascaras(document.getElementById('inLitros').value);
             const km = limparMascaras(document.getElementById('inKM').value);
             const dataStr = `${document.getElementById('inData').value}T${document.getElementById('inHora').value}`;
+            if(!litros || !km) return alert("Preencha tudo!");
+            
             const v = viaturas.find(x => x.id === v_id);
-            if(km <= v.ultimo_hodometro) return alert("Erro: KM Menor!");
+            if(km <= v.ultimo_hodometro) return alert("HODÔMETRO INVÁLIDO!");
+            
             let media = v.ultimo_hodometro > 0 ? ((km - v.ultimo_hodometro) / litros).toFixed(3) : 0;
             await supabaseClient.from('abastecimentos').insert([{ viatura_id: v_id, litros, hodometro_atual: km, media_trecho: media, data_hora: dataStr }]);
             await supabaseClient.from('viaturas').update({ ultimo_hodometro: km }).eq('id', v_id);
@@ -278,66 +326,56 @@
         }
 
         function gerarDashIndividual() {
-            renderHistoricoInd();
             const id = document.getElementById('selDashViatura').value;
             const logs = abastecimentos.filter(a => a.viatura_id === id).reverse();
             if(logs.length === 0) return;
 
-            // Média Geral
-            const avg = logs.filter(l => l.media_trecho > 0).reduce((a,c) => a+Number(c.media_trecho), 0) / logs.filter(l => l.media_trecho > 0).length;
-            document.getElementById('mediaGeralIndividual').innerText = avg.toFixed(2);
+            const avg = logs.filter(l => l.media_trecho > 0).reduce((a,c) => a+Number(c.media_trecho), 0) / (logs.filter(l => l.media_trecho > 0).length || 1);
+            document.getElementById('mediaGeralIndividual').innerText = avg.toFixed(1);
 
-            // Detecção de Furo Cronológico
-            const alerta = document.getElementById('alertaFuro');
-            alerta.classList.add('hidden');
+            const alerta = document.getElementById('alertaFuro'); alerta.classList.add('hidden');
             for(let i=1; i < logs.length; i++) {
                 if(logs[i].hodometro_atual - logs[i-1].hodometro_atual > 1500) {
                     alerta.classList.remove('hidden');
-                    const d1 = new Date(logs[i-1].data_hora).toLocaleDateString();
-                    const d2 = new Date(logs[i].data_hora).toLocaleDateString();
-                    document.getElementById('periodoFuro').innerText = `Entre ${d1} e ${d2}`;
+                    document.getElementById('periodoFuro').innerText = `Entre ${new Date(logs[i-1].data_hora).toLocaleDateString()} e ${new Date(logs[i].data_hora).toLocaleDateString()}`;
                     break;
                 }
             }
+
+            document.getElementById('listaHistInd').innerHTML = [...logs].reverse().map(a => `
+                <tr class="hover:bg-slate-800/50">
+                    <td class="p-4 text-slate-400">${new Date(a.data_hora).toLocaleDateString()}</td>
+                    <td class="p-4 font-bold text-white">${a.hodometro_atual.toLocaleString()} KM</td>
+                    <td class="p-4 text-slate-300">${a.litros.toLocaleString()} L</td>
+                    <td class="p-4 font-brand text-lg text-cyan-400">${a.media_trecho}</td>
+                </tr>
+            `).join('');
 
             if(chart) chart.destroy();
             chart = new Chart(document.getElementById('graficoEvolucao'), {
                 type: 'line',
                 data: {
                     labels: logs.map(l => new Date(l.data_hora).toLocaleDateString()),
-                    datasets: [{ data: logs.map(l => l.media_trecho), borderColor: '#00f2ff', tension: 0.3, fill: true, backgroundColor: 'rgba(0,242,255,0.05)' }]
+                    datasets: [{ data: logs.map(l => l.media_trecho), borderColor: '#06b6d4', tension: 0.4, borderWeight: 4, pointRadius: 4, fill: true, backgroundColor: 'rgba(6, 182, 212, 0.05)' }]
                 },
-                options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
+                options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: '#334155' } }, x: { grid: { display: false } } } }
             });
         }
 
-        function renderHistoricoInd() {
-            const id = document.getElementById('selDashViatura').value;
-            const filtroData = document.getElementById('filtroDataInd').value;
-            const logs = abastecimentos.filter(a => {
-                const isViatura = a.viatura_id === id;
-                const dateMatch = filtroData ? a.data_hora.startsWith(filtroData) : true;
-                return isViatura && dateMatch;
-            });
-
-            document.getElementById('listaHistInd').innerHTML = logs.map(a => `
-                <tr>
-                    <td class="p-3 text-slate-500">${new Date(a.data_hora).toLocaleString('pt-BR')}</td>
-                    <td class="p-3 font-bold">${a.hodometro_atual.toLocaleString('pt-BR')} KM</td>
-                    <td class="p-3">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits:3})} L</td>
-                    <td class="p-3 font-bold text-cyan-400">${a.media_trecho}</td>
-                </tr>
-            `).join('');
+        async function salvarViatura() {
+            const id = document.getElementById('editId').value;
+            const payload = { apelido: document.getElementById('cadApelido').value, placa: document.getElementById('cadPlaca').value.toUpperCase(), modelo: document.getElementById('cadModelo').value, categoria: document.getElementById('cadCategoria').value };
+            if(id) await supabaseClient.from('viaturas').update(payload).eq('id', id);
+            else await supabaseClient.from('viaturas').insert([payload]);
+            location.reload();
         }
 
         function switchTab(t) {
             ['lançamento', 'frota', 'dashboard'].forEach(x => {
                 document.getElementById('sec-'+x).classList.add('hidden');
-                document.getElementById('tab-'+x).classList.replace('text-cyan-500', 'text-slate-500');
                 document.getElementById('tab-'+x).classList.remove('tab-active');
             });
             document.getElementById('sec-' + t).classList.remove('hidden');
-            document.getElementById('tab-' + t).classList.replace('text-slate-500', 'text-cyan-500');
             document.getElementById('tab-' + t).classList.add('tab-active');
             if(t === 'dashboard') gerarDashIndividual();
         }
@@ -348,17 +386,19 @@
             document.getElementById('cadApelido').value = v.apelido;
             document.getElementById('cadPlaca').value = v.placa;
             document.getElementById('cadModelo').value = v.modelo;
-            document.getElementById('cadCategoria').value = v.categoria || 'Carro';
+            document.getElementById('cadCategoria').value = v.categoria;
             switchTab('frota');
         }
 
         async function excluirViatura(id) {
-            if(confirm("Excluir viatura e histórico?")) {
+            if(confirm("Confirmar exclusão?")) {
                 await supabaseClient.from('abastecimentos').delete().eq('viatura_id', id);
                 await supabaseClient.from('viaturas').delete().eq('id', id);
                 location.reload();
             }
         }
+
+        init();
     </script>
 </body>
 </html>

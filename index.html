@@ -59,7 +59,7 @@
         <section id="sec-lançamento" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <div class="lg:col-span-4 space-y-6">
                 <div class="card-pro p-6 border-l-4 border-l-cyan-500 shadow-xl">
-                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">📝 Novo Registro</h3>
+                    <h3 class="text-lg font-bold mb-6 flex items-center gap-2">📝 Registro de Abastecimento</h3>
                     <div class="space-y-4">
                         <select id="selViatura" class="input-pro"></select>
                         <div class="grid grid-cols-2 gap-3">
@@ -70,7 +70,8 @@
                             <input id="inLitros" type="text" oninput="mascaraDecimal(this)" class="input-pro text-cyan-400 font-bold" placeholder="Litros">
                             <input id="inKM" type="text" oninput="mascaraKM(this)" class="input-pro font-bold" placeholder="KM Atual">
                         </div>
-                        <button onclick="registrarAbastecimento()" class="btn-action w-full py-4 mt-2 shadow-lg shadow-cyan-900/20">SALVAR REGISTRO</button>
+                        <button id="btnSalvarAbastecimento" onclick="registrarAbastecimento()" class="btn-action w-full py-4 mt-2 shadow-lg shadow-cyan-900/20">SALVAR REGISTRO</button>
+                        <button id="btnCancelaEditAbast" onclick="limparFormAbastecimento()" class="hidden w-full text-xs text-red-400 underline">Cancelar Edição</button>
                     </div>
                 </div>
             </div>
@@ -162,11 +163,11 @@
     </main>
 
     <script>
-        // Configurações do Supabase (Mantidas)
         const _URL = "https://olldeytolxdzxxvciyon.supabase.co";
         const _KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9sbGRleXRvbHhkenh4dmNpeW9uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1ODM2MDUsImV4cCI6MjA5MTE1OTYwNX0.r3LxebF13PYt-boPFqPUsZ03y5CSD4-6iSUEE_huhXE";
         const supabaseClient = supabase.createClient(_URL, _KEY);
         let viaturas = [], abastecimentos = [], chart = null;
+        let idEdicaoAbastecimento = null;
 
         function mascaraKM(i) { let v = i.value.replace(/\D/g, ""); v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); i.value = v; }
         function mascaraDecimal(i) { let v = i.value.replace(/\D/g, ""); v = (Number(v) / 1000).toFixed(3).replace(".", ","); v = v.replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1."); i.value = v; }
@@ -176,12 +177,9 @@
             const agora = new Date();
             document.getElementById('inData').value = agora.toISOString().split('T')[0];
             document.getElementById('inHora').value = agora.toTimeString().split(' ')[0];
-            
-            // Datas iniciais do filtro (mês atual)
             const primDia = new Date(agora.getFullYear(), agora.getMonth(), 1);
             document.getElementById('dashDataInicio').value = primDia.toISOString().split('T')[0];
             document.getElementById('dashDataFim').value = agora.toISOString().split('T')[0];
-            
             await carregarDados();
         }
 
@@ -199,8 +197,89 @@
         function renderTabela() {
             const f = document.getElementById('filtroPlacaGeral').value.toUpperCase();
             const filtrados = abastecimentos.filter(a => a.viaturas.placa.includes(f) || a.viaturas.apelido.includes(f));
-            document.getElementById('listaAbastecimentos').innerHTML = filtrados.map(a => `<tr class="row-pro border-b border-slate-800/50"><td class="text-[10px] text-slate-500 font-bold">${new Date(a.data_hora).toLocaleDateString()}</td><td><div class="flex items-center gap-2"><span class="text-xs font-black bg-cyan-500 text-black px-1.5 rounded-md shadow-lg shadow-cyan-900/20">#${a.viaturas.apelido}</span><span class="text-[11px] font-bold text-slate-300 tracking-wider">${a.viaturas.placa}</span></div></td><td class="text-[12px] font-bold">${a.hodometro_atual.toLocaleString()} <span class="text-[9px] text-slate-500">KM</span></td><td class="text-[12px] font-bold">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits:3})} <span class="text-[9px] text-slate-500">L</span></td><td class="text-right font-brand text-xl ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</td></tr>`).join('');
+            document.getElementById('listaAbastecimentos').innerHTML = filtrados.map(a => `
+                <tr class="row-pro border-b border-slate-800/50">
+                    <td class="text-[10px] text-slate-500 font-bold">${new Date(a.data_hora).toLocaleDateString()}</td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs font-black bg-cyan-500 text-black px-1.5 rounded-md">#${a.viaturas.apelido}</span>
+                            <span class="text-[11px] font-bold text-slate-300 tracking-wider">${a.viaturas.placa}</span>
+                        </div>
+                    </td>
+                    <td class="text-[12px] font-bold">${a.hodometro_atual.toLocaleString()} <span class="text-[9px] text-slate-500">KM</span></td>
+                    <td class="text-[12px] font-bold">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits:3})} <span class="text-[9px] text-slate-500">L</span></td>
+                    <td class="text-right font-brand text-xl ${a.media_trecho > 5 ? 'text-green-400' : 'text-red-400'}">${a.media_trecho}</td>
+                    <td class="text-right space-x-2">
+                        <button onclick="prepararEdicaoAbastecimento('${a.id}')" class="text-cyan-500 hover:text-white text-[10px] font-bold">EDITAR</button>
+                        <button onclick="excluirAbastecimento('${a.id}')" class="text-red-500 hover:text-white text-[10px] font-bold">APAGAR</button>
+                    </td>
+                </tr>`).join('');
         }
+
+        // --- FUNÇÕES DE OPERAÇÃO ABASTECIMENTO ---
+
+        async function registrarAbastecimento() {
+            const v_id = document.getElementById('selViatura').value, 
+                  litros = limparMascaras(document.getElementById('inLitros').value), 
+                  km = limparMascaras(document.getElementById('inKM').value), 
+                  data = `${document.getElementById('inData').value}T${document.getElementById('inHora').value}`;
+            
+            const v = viaturas.find(x => x.id === v_id);
+
+            // Cálculo de média (Baseado no último hodômetro registrado na viatura)
+            let m = (v.ultimo_hodometro > 0 && km > v.ultimo_hodometro) ? ((km - v.ultimo_hodometro) / litros).toFixed(3) : 0;
+
+            if(idEdicaoAbastecimento) {
+                // UPDATE
+                await supabaseClient.from('abastecimentos').update({ 
+                    viatura_id: v_id, litros, hodometro_atual: km, media_trecho: m, data_hora: data 
+                }).eq('id', idEdicaoAbastecimento);
+            } else {
+                // INSERT
+                if(km <= v.ultimo_hodometro) return alert("HODÔMETRO INVÁLIDO OU MENOR QUE O ANTERIOR!");
+                await supabaseClient.from('abastecimentos').insert([{ 
+                    viatura_id: v_id, litros, hodometro_atual: km, media_trecho: m, data_hora: data 
+                }]);
+            }
+
+            // Atualiza o último hodômetro da viatura para referência futura
+            await supabaseClient.from('viaturas').update({ ultimo_hodometro: km }).eq('id', v_id);
+            location.reload();
+        }
+
+        function prepararEdicaoAbastecimento(id) {
+            const reg = abastecimentos.find(a => a.id === id);
+            if(!reg) return;
+
+            idEdicaoAbastecimento = id;
+            document.getElementById('selViatura').value = reg.viatura_id;
+            document.getElementById('inData').value = reg.data_hora.split('T')[0];
+            document.getElementById('inHora').value = reg.data_hora.split('T')[1].substring(0, 8);
+            document.getElementById('inLitros').value = reg.litros.toLocaleString('pt-BR', {minimumFractionDigits: 3});
+            document.getElementById('inKM').value = reg.hodometro_atual.toLocaleString('pt-BR');
+
+            document.getElementById('btnSalvarAbastecimento').innerText = "ATUALIZAR REGISTRO";
+            document.getElementById('btnSalvarAbastecimento').classList.replace('bg-cyan-500', 'bg-yellow-500');
+            document.getElementById('btnCancelaEditAbast').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function limparFormAbastecimento() {
+            idEdicaoAbastecimento = null;
+            document.getElementById('btnSalvarAbastecimento').innerText = "SALVAR REGISTRO";
+            document.getElementById('btnSalvarAbastecimento').classList.replace('bg-yellow-500', 'bg-cyan-500');
+            document.getElementById('btnCancelaEditAbast').classList.add('hidden');
+            init(); // Reset datas
+        }
+
+        async function excluirAbastecimento(id) {
+            if(confirm("Deseja apagar este registro permanentemente?")) {
+                await supabaseClient.from('abastecimentos').delete().eq('id', id);
+                location.reload();
+            }
+        }
+
+        // --- RESTANTE DAS FUNÇÕES ORIGINAIS ---
 
         function renderFrota() {
             document.getElementById('gridViaturas').innerHTML = viaturas.map(v => `<div class="card-pro p-6 flex flex-col items-center hover:border-cyan-500/50 transition-all"><div class="badge-cat mb-3">${v.categoria || 'Carro'}</div><div class="text-3xl font-brand font-bold text-white">#${v.apelido}</div><div class="text-[10px] text-cyan-500 font-black mb-4 tracking-widest">${v.placa}</div><div class="flex gap-4 w-full pt-4 border-t border-slate-800/50"><button onclick="prepararEdicao('${v.id}')" class="text-[10px] font-bold uppercase hover:text-cyan-400 flex-1 transition-colors">Editar</button><button onclick="excluirViatura('${v.id}')" class="text-[10px] font-bold uppercase hover:text-red-500 flex-1 transition-colors">Excluir</button></div></div>`).join('');
@@ -209,7 +288,7 @@
         function renderRankings() {
             const cats = ['Carro', '3/4', 'Caminhão'];
             document.getElementById('rankingsCategoria').innerHTML = cats.map(cat => {
-                const logsCat = abastecimentos.filter(a => a.viaturas.categoria === cat && a.media_trecho > 0);
+                const logsCat = abastecimentos.filter(a => a.viaturas && a.viaturas.categoria === cat && a.media_trecho > 0);
                 const medias = {};
                 logsCat.forEach(l => { if(!medias[l.viaturas.apelido]) medias[l.viaturas.apelido] = []; medias[l.viaturas.apelido].push(Number(l.media_trecho)); });
                 const ranking = Object.keys(medias).map(ap => ({ ap, avg: (medias[ap].reduce((a,b)=>a+b,0)/medias[ap].length).toFixed(2) })).sort((a,b)=>b.avg-a.avg);
@@ -222,15 +301,13 @@
             const id = document.getElementById('selDashViatura').value;
             const dataIni = new Date(document.getElementById('dashDataInicio').value + 'T00:00:00');
             const dataFim = new Date(document.getElementById('dashDataFim').value + 'T23:59:59');
-            
-            // Filtrar por ID e por Data
             const logs = abastecimentos.filter(a => {
                 const dataAbast = new Date(a.data_hora);
                 return a.viatura_id === id && dataAbast >= dataIni && dataAbast <= dataFim;
             }).reverse();
 
             if(logs.length === 0) {
-                document.getElementById('listaHistInd').innerHTML = `<tr><td colspan="4" class="text-center p-10 text-slate-600">Nenhum dado encontrado para este período</td></tr>`;
+                document.getElementById('listaHistInd').innerHTML = `<tr><td colspan="4" class="text-center p-10 text-slate-600">Nenhum dado encontrado</td></tr>`;
                 document.getElementById('mediaGeralIndividual').innerText = "0.0";
                 if(chart) chart.destroy();
                 return;
@@ -244,7 +321,7 @@
             
             document.getElementById('listaHistInd').innerHTML = [...logs].reverse().map(a => `
                 <tr class="hover:bg-cyan-500/5 border-b border-slate-800/50 transition-colors">
-                    <td class="p-4 font-medium text-slate-400">${new Date(a.data_hora).toLocaleDateString()} <span class="text-[10px] ml-1">${new Date(a.data_hora).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span></td>
+                    <td class="p-4 font-medium text-slate-400">${new Date(a.data_hora).toLocaleDateString()}</td>
                     <td class="p-4 font-bold text-white">${a.hodometro_atual.toLocaleString()} <span class="text-[9px] text-slate-600">KM</span></td>
                     <td class="p-4 text-slate-300">${a.litros.toLocaleString('pt-BR', {minimumFractionDigits: 3})} <span class="text-[9px] text-slate-600">L</span></td>
                     <td class="p-4 font-brand text-2xl text-right text-cyan-400 italic">${a.media_trecho}</td>
@@ -253,17 +330,6 @@
 
             if(chart) chart.destroy();
             chart = new Chart(document.getElementById('graficoEvolucao'), { type: 'line', data: { labels: logs.map(l => new Date(l.data_hora).toLocaleDateString()), datasets: [{ data: logs.map(l => l.media_trecho), borderColor: '#06b6d4', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(6, 182, 212, 0.05)', pointRadius: 5, pointBackgroundColor: '#06b6d4' }] }, options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } }, x: { grid: { display: false } } } } });
-        }
-
-        // Funções de Operação (Cadastros/Abastecimentos) - Mantidas as lógicas anteriores
-        async function registrarAbastecimento() {
-            const v_id = document.getElementById('selViatura').value, litros = limparMascaras(document.getElementById('inLitros').value), km = limparMascaras(document.getElementById('inKM').value), data = `${document.getElementById('inData').value}T${document.getElementById('inHora').value}`;
-            const v = viaturas.find(x => x.id === v_id);
-            if(km <= v.ultimo_hodometro) return alert("HODÔMETRO INVÁLIDO!");
-            let m = v.ultimo_hodometro > 0 ? ((km - v.ultimo_hodometro) / litros).toFixed(3) : 0;
-            await supabaseClient.from('abastecimentos').insert([{ viatura_id: v_id, litros, hodometro_atual: km, media_trecho: m, data_hora: data }]);
-            await supabaseClient.from('viaturas').update({ ultimo_hodometro: km }).eq('id', v_id);
-            location.reload();
         }
 
         async function salvarViatura() {
